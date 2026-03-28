@@ -4,5 +4,6 @@ Retrospective timetable with progress trackers.
 Data stored on browser cache.
 
 
-In the future, may integrate with [tripos.pro](tripos.pro, Oli's website)
+(Do the npm run dev stuff if you want to use this)
+
 

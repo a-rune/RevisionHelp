@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { getQuestionsForCourse } from "./triposTopicMap";
 import { newAttemptId, paperStorageKey, ppqDataFromParsed } from "./ppqStorage";
-import { formatDuration, normalizeSolutionUrl, pastPaperPdfUrl, stableQuestionKey } from "./ppqUtils";
+import { formatDuration, normalizeSolutionUrl, pastPaperPdfUrl, ppqCellVisualStyle, stableQuestionKey } from "./ppqUtils";
 
 function groupQuestionsByPaper(qs) {
   const map = new Map();
@@ -15,6 +15,22 @@ function groupQuestionsByPaper(qs) {
     const [yb, pb] = b[0].split("|");
     return Number(yb) - Number(ya) || Number(pa) - Number(pb);
   });
+}
+
+function formatShortTaken(iso) {
+  if (!iso) return "—";
+  try {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return "—";
+    return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  } catch {
+    return "—";
+  }
+}
+
+function getLatestAttempt(attempts) {
+  if (!attempts?.length) return null;
+  return [...attempts].sort((a, b) => new Date(b.at) - new Date(a.at))[0];
 }
 
 function Stopwatch({ onLogAttempt }) {
@@ -114,39 +130,16 @@ const inpSm = {
   fontFamily: "inherit",
 };
 
-function QuestionCard({ q, qKey, qState, onAddAttempt, onDeleteAttempt }) {
-  const [open, setOpen] = useState(false);
+function QuestionDetailPanel({ q, qKey, qState, onAddAttempt, onDeleteAttempt }) {
   const pdfUrl = pastPaperPdfUrl(q.pdf);
   const solUrl = normalizeSolutionUrl(q.solutions);
   const label = `${q.year} · paper ${q.paper} · Q${q.question}`;
   const attempts = qState?.attempts || [];
 
   return (
-    <div style={{ border: "1px solid #1e293b", borderRadius: 6, marginBottom: 6, overflow: "hidden", background: "#0a0f1a" }}>
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        style={{
-          width: "100%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 8,
-          padding: "8px 10px",
-          background: "none",
-          border: "none",
-          cursor: "pointer",
-          textAlign: "left",
-          color: "#e2e8f0",
-        }}
-      >
-        <span style={{ fontSize: 11, fontWeight: 600 }}>{label}</span>
-        <span style={{ fontSize: 10, color: "#64748b" }}>
-          {attempts.length ? `${attempts.length} attempt${attempts.length === 1 ? "" : "s"}` : "no attempts yet"}
-        </span>
-        <span style={{ fontSize: 12, color: "#475569" }}>{open ? "▼" : "▶"}</span>
-      </button>
-      <div style={{ display: "flex", gap: 10, padding: "0 10px 8px", flexWrap: "wrap", fontSize: 10 }}>
+    <div>
+      <div style={{ fontSize: 14, fontWeight: 700, color: "#f1f5f9", marginBottom: 8 }}>{label}</div>
+      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", fontSize: 11, marginBottom: 12 }}>
         {pdfUrl && (
           <a href={pdfUrl} target="_blank" rel="noreferrer" style={{ color: "#60a5fa" }}>
             Paper PDF
@@ -157,56 +150,53 @@ function QuestionCard({ q, qKey, qState, onAddAttempt, onDeleteAttempt }) {
             Solutions
           </a>
         )}
+        <span style={{ fontSize: 10, color: "#64748b" }}>{q.topic}</span>
       </div>
-      {open && (
-        <div style={{ padding: "0 10px 12px", borderTop: "1px solid #1e293b" }}>
-          <Stopwatch
-            onLogAttempt={(att) =>
-              onAddAttempt(qKey, {
-                id: newAttemptId(),
-                at: new Date().toISOString(),
-                durationSec: att.durationSec,
-                notes: att.notes,
-                marks: att.marks,
-              })
-            }
-          />
-          {attempts.length > 0 && (
-            <div style={{ marginTop: 12 }}>
-              <div style={{ fontSize: 9, color: "#64748b", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>Past attempts</div>
-              <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 8 }}>
-                {[...attempts].reverse().map((a) => (
-                  <li
-                    key={a.id}
-                    style={{
-                      fontSize: 10,
-                      padding: "8px 10px",
-                      background: "#0f172a",
-                      borderRadius: 6,
-                      border: "1px solid #1e293b",
-                      color: "#cbd5e1",
-                    }}
+      <Stopwatch
+        onLogAttempt={(att) =>
+          onAddAttempt(qKey, {
+            id: newAttemptId(),
+            at: new Date().toISOString(),
+            durationSec: att.durationSec,
+            notes: att.notes,
+            marks: att.marks,
+          })
+        }
+      />
+      {attempts.length > 0 && (
+        <div style={{ marginTop: 12 }}>
+          <div style={{ fontSize: 9, color: "#64748b", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>Past attempts</div>
+          <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 8 }}>
+            {[...attempts].reverse().map((a) => (
+              <li
+                key={a.id}
+                style={{
+                  fontSize: 10,
+                  padding: "8px 10px",
+                  background: "#0f172a",
+                  borderRadius: 6,
+                  border: "1px solid #1e293b",
+                  color: "#cbd5e1",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap", alignItems: "flex-start" }}>
+                  <span style={{ color: "#94a3b8" }}>
+                    {new Date(a.at).toLocaleString(undefined, { dateStyle: "short", timeStyle: "short" })}
+                  </span>
+                  <span style={{ color: "#f472b6" }}>{a.durationSec != null ? formatDuration(a.durationSec) : "—"}</span>
+                  <button
+                    type="button"
+                    onClick={() => onDeleteAttempt(qKey, a.id)}
+                    style={{ fontSize: 9, background: "none", border: "none", color: "#64748b", cursor: "pointer", marginLeft: "auto" }}
                   >
-                    <div style={{ display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap", alignItems: "flex-start" }}>
-                      <span style={{ color: "#94a3b8" }}>
-                        {new Date(a.at).toLocaleString(undefined, { dateStyle: "short", timeStyle: "short" })}
-                      </span>
-                      <span style={{ color: "#f472b6" }}>{a.durationSec != null ? formatDuration(a.durationSec) : "—"}</span>
-                      <button
-                        type="button"
-                        onClick={() => onDeleteAttempt(qKey, a.id)}
-                        style={{ fontSize: 9, background: "none", border: "none", color: "#64748b", cursor: "pointer", marginLeft: "auto" }}
-                      >
-                        Remove
-                      </button>
-                    </div>
-                    {a.marks ? <div style={{ marginTop: 4, color: "#a78bfa" }}>Marks: {a.marks}</div> : null}
-                    {a.notes ? <div style={{ marginTop: 4, whiteSpace: "pre-wrap" }}>{a.notes}</div> : null}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+                    Remove
+                  </button>
+                </div>
+                {a.marks ? <div style={{ marginTop: 4, color: "#a78bfa" }}>Marks: {a.marks}</div> : null}
+                {a.notes ? <div style={{ marginTop: 4, whiteSpace: "pre-wrap" }}>{a.notes}</div> : null}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </div>
@@ -215,6 +205,16 @@ function QuestionCard({ q, qKey, qState, onAddAttempt, onDeleteAttempt }) {
 
 export default function PpqBankView({ visibleCourses, ppqData, setPpqData, triposQuestions, triposError, triposLoading, onRetryLoad }) {
   const [yearFilter, setYearFilter] = useState("all");
+  const [selected, setSelected] = useState(null);
+
+  useEffect(() => {
+    if (!selected) return;
+    const onKey = (e) => {
+      if (e.key === "Escape") setSelected(null);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [selected]);
 
   const years = useMemo(() => {
     if (!triposQuestions?.length) return [];
@@ -293,7 +293,9 @@ export default function PpqBankView({ visibleCourses, ppqData, setPpqData, tripo
 
   if (triposLoading) {
     return (
-      <div style={{ textAlign: "center", padding: 48, color: "#64748b", fontSize: 13 }}>Loading question index from tripospro…</div>
+      <div style={{ textAlign: "center", padding: 48, color: "#64748b", fontSize: 13 }}>
+        Loading question list (one request to GitHub for <code style={{ color: "#94a3b8" }}>questions.json</code>)…
+      </div>
     );
   }
 
@@ -336,7 +338,28 @@ export default function PpqBankView({ visibleCourses, ppqData, setPpqData, tripo
           <span style={{ marginRight: 8 }}>Import merge</span>
           <input type="file" accept="application/json" onChange={importPpq} style={{ fontSize: 10 }} />
         </label>
-        <span style={{ fontSize: 10, color: "#475569" }}>Expand each course below. Paper notes + attempts are stored locally.</span>
+        <span style={{ fontSize: 9, color: "#475569" }}>One GitHub fetch ·</span>
+        <span style={{ fontSize: 9, color: "#64748b", marginLeft: 4 }}>Key</span>
+        {[
+          { t: "Not done", attempts: [] },
+          { t: "No mark", attempts: [{ id: "_", at: "2000-01-01T00:00:00.000Z", marks: "" }] },
+          { t: "25%", attempts: [{ id: "_", at: "2000-01-01T00:00:00.000Z", marks: "5/20" }] },
+          { t: "75%", attempts: [{ id: "_", at: "2000-01-01T00:00:00.000Z", marks: "15/20" }] },
+        ].map(({ t, attempts }) => (
+          <span key={t} style={{ display: "inline-flex", alignItems: "center", gap: 3, marginLeft: 6 }} title={t}>
+            <span
+              style={{
+                display: "inline-block",
+                width: 11,
+                height: 11,
+                borderRadius: 2,
+                verticalAlign: "middle",
+                ...ppqCellVisualStyle(attempts),
+              }}
+            />
+            <span style={{ fontSize: 8, color: "#64748b" }}>{t}</span>
+          </span>
+        ))}
       </div>
 
       {visibleCourses.map((course) => {
@@ -382,36 +405,113 @@ export default function PpqBankView({ visibleCourses, ppqData, setPpqData, tripo
                 </p>
               )}
               {total > 0 &&
-                paperGroups.map(([yp, paperQs]) => {
+                paperGroups.map(([yp, paperQs], pi) => {
                   const [year, paper] = yp.split("|");
                   const pk = paperStorageKey(course.id, year, paper);
                   const note = ppqData.paperNotes[pk] || "";
+                  const yy = year.length >= 2 ? year.slice(-2) : year;
+                  const sortedQs = [...paperQs].sort((a, b) => Number(a.question) - Number(b.question));
+                  const lastPaper = pi === paperGroups.length - 1;
                   return (
-                    <div key={yp} style={{ marginBottom: 16 }}>
-                      <div style={{ fontSize: 11, fontWeight: 600, color: "#94a3b8", marginBottom: 6 }}>
-                        {year} · Paper {paper}
+                    <div
+                      key={yp}
+                      style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        alignItems: "stretch",
+                        gap: 8,
+                        marginBottom: lastPaper ? 0 : 8,
+                        paddingBottom: lastPaper ? 0 : 8,
+                        borderBottom: lastPaper ? "none" : "1px solid #1e293b",
+                      }}
+                    >
+                      <div style={{ flex: "0 0 auto", width: 112, minWidth: 88 }}>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", letterSpacing: 0.3, marginBottom: 4 }}>
+                          ’{yy} · P{paper}
+                        </div>
+                        <textarea
+                          value={note}
+                          onChange={(e) => setPaperNote(course.id, year, paper, e.target.value)}
+                          placeholder="Paper notes…"
+                          rows={1}
+                          style={{
+                            width: "100%",
+                            fontSize: 9,
+                            lineHeight: 1.35,
+                            padding: "5px 6px",
+                            background: "#020617",
+                            border: "1px solid #1e293b",
+                            borderRadius: 4,
+                            color: "#94a3b8",
+                            resize: "none",
+                            fontFamily: "inherit",
+                            minHeight: 28,
+                            maxHeight: 56,
+                            overflow: "auto",
+                          }}
+                        />
                       </div>
-                      <label style={{ display: "block", fontSize: 9, color: "#64748b", marginBottom: 4 }}>Notes for this paper (overall)</label>
-                      <textarea
-                        value={note}
-                        onChange={(e) => setPaperNote(course.id, year, paper, e.target.value)}
-                        placeholder="Timing strategy, which questions to skip, general remarks…"
-                        rows={2}
-                        style={{ width: "100%", maxWidth: "100%", fontSize: 10, padding: "8px 10px", background: "#020617", border: "1px solid #334155", borderRadius: 6, color: "#e2e8f0", marginBottom: 10, resize: "vertical", fontFamily: "inherit" }}
-                      />
-                      {paperQs.map((q) => {
-                        const qk = stableQuestionKey(q);
-                        return (
-                          <QuestionCard
-                            key={qk}
-                            q={q}
-                            qKey={qk}
-                            qState={ppqData.questions[qk]}
-                            onAddAttempt={addAttempt}
-                            onDeleteAttempt={deleteAttempt}
-                          />
-                        );
-                      })}
+                      <div
+                        style={{
+                          display: "flex",
+                          flexWrap: "wrap",
+                          gap: 4,
+                          flex: "1 1 200px",
+                          alignContent: "flex-start",
+                        }}
+                      >
+                        {sortedQs.map((q) => {
+                          const qk = stableQuestionKey(q);
+                          const attempts = ppqData.questions[qk]?.attempts || [];
+                          const n = attempts.length;
+                          const latest = getLatestAttempt(attempts);
+                          const vis = ppqCellVisualStyle(attempts);
+                          const marksShow = latest?.marks?.trim() ? latest.marks.trim() : "—";
+                          return (
+                            <button
+                              key={qk}
+                              type="button"
+                              onClick={() => setSelected({ q, qKey: qk })}
+                              title={`${course.name} · ${q.year} paper ${q.paper} Q${q.question} · ${n} attempt(s)`}
+                              style={{
+                                ...vis,
+                                width: 68,
+                                minHeight: 54,
+                                padding: "3px 4px",
+                                borderRadius: 5,
+                                cursor: "pointer",
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                gap: 1,
+                                textAlign: "center",
+                                lineHeight: 1.15,
+                                boxSizing: "border-box",
+                              }}
+                            >
+                              <span style={{ fontSize: 9, fontWeight: 800, fontVariantNumeric: "tabular-nums", color: vis.color }}>
+                                ’{yy} Q{q.question}
+                              </span>
+                              <span style={{ fontSize: 8, color: vis.color, opacity: 0.88 }}>{formatShortTaken(latest?.at)}</span>
+                              <span
+                                style={{
+                                  fontSize: 8,
+                                  fontWeight: 600,
+                                  color: vis.color,
+                                  opacity: latest?.marks?.trim() ? 0.95 : 0.55,
+                                  maxWidth: "100%",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {marksShow}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   );
                 })}
@@ -419,6 +519,55 @@ export default function PpqBankView({ visibleCourses, ppqData, setPpqData, tripo
           </details>
         );
       })}
+
+      {selected && (
+        <div
+          role="presentation"
+          onClick={() => setSelected(null)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 300,
+            background: "rgba(2, 6, 23, 0.88)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 16,
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Question details"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "100%",
+              maxWidth: 520,
+              maxHeight: "min(90vh, 720px)",
+              overflow: "auto",
+              background: "#0f172a",
+              border: "1px solid #334155",
+              borderRadius: 12,
+              padding: 20,
+              boxShadow: "0 25px 80px rgba(0,0,0,0.55)",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 12 }}>
+              <span style={{ fontSize: 10, color: "#64748b", textTransform: "uppercase", letterSpacing: 1 }}>PPQ question</span>
+              <button type="button" onClick={() => setSelected(null)} style={{ ...btnSm, flexShrink: 0 }}>
+                Close
+              </button>
+            </div>
+            <QuestionDetailPanel
+              q={selected.q}
+              qKey={selected.qKey}
+              qState={ppqData.questions[selected.qKey]}
+              onAddAttempt={addAttempt}
+              onDeleteAttempt={deleteAttempt}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

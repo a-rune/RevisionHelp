@@ -14,6 +14,7 @@ export function stableQuestionKey(q) {
   return `${q.year}|${q.paper}|${q.question}|${q.topic}`;
 }
 
+/** Static JSON from the tripospro GitHub repo (CDN). Loaded at most once per browser session — not tripos.pro and not a polling loop. */
 export const TRIPOS_QUESTIONS_URL =
   "https://raw.githubusercontent.com/olifog/tripospro/main/questions.json";
 
@@ -23,4 +24,65 @@ export function formatDuration(sec) {
   const m = Math.floor(s / 60);
   const r = s % 60;
   return `${m}:${String(r).padStart(2, "0")}`;
+}
+
+/**
+ * Parse a marks string to 0–1. Supports `12/20`, `75%`, `0.75`, or `75` (percent if >1).
+ * Returns null if nothing parseable.
+ */
+export function parseMarksRatio(marksStr) {
+  if (marksStr == null || typeof marksStr !== "string") return null;
+  const t = marksStr.trim();
+  if (!t) return null;
+
+  const frac = t.match(/^(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)/);
+  if (frac) {
+    const a = parseFloat(frac[1]);
+    const b = parseFloat(frac[2]);
+    if (b > 0 && !Number.isNaN(a) && !Number.isNaN(b)) return Math.max(0, Math.min(1, a / b));
+  }
+
+  const pct = t.match(/^(\d+(?:\.\d+)?)\s*%/);
+  if (pct) {
+    const p = parseFloat(pct[1]);
+    if (!Number.isNaN(p)) return Math.max(0, Math.min(1, p / 100));
+  }
+
+  const lone = t.match(/^(\d+(?:\.\d+)?)\s*$/);
+  if (lone) {
+    const v = parseFloat(lone[1]);
+    if (Number.isNaN(v)) return null;
+    if (v >= 0 && v <= 1) return v;
+    if (v >= 0 && v <= 100) return v / 100;
+  }
+
+  return null;
+}
+
+/** Not attempted: dark blue. Attempted: red→green by marks; amber if no parseable mark. */
+export function ppqCellVisualStyle(attempts) {
+  if (!attempts?.length) {
+    return {
+      background: "#0c1929",
+      border: "1px solid #1d4ed8",
+      color: "#93c5fd",
+    };
+  }
+
+  const latest = [...attempts].sort((a, b) => new Date(b.at) - new Date(a.at))[0];
+  const ratio = parseMarksRatio(latest?.marks);
+  if (ratio == null) {
+    return {
+      background: "#292524",
+      border: "1px solid #b45309",
+      color: "#fde68a",
+    };
+  }
+
+  const hue = ratio * 120;
+  return {
+    background: `hsl(${hue}, 42%, 18%)`,
+    border: `1px solid hsl(${hue}, 55%, 36%)`,
+    color: "#f8fafc",
+  };
 }
