@@ -966,6 +966,7 @@ export default function RevisionTracker() {
     });
   }, [topicData, hiddenCourseIds, ppqData, loaded]);
 
+  // Single GET of static questions.json from GitHub (tripospro repo). No tripos.pro API; no repeated polling.
   useEffect(() => {
     if (mainView !== "ppq") return;
     if (triposQuestions !== null) return;
