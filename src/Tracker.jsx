@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import PpqBankView from "./PpqBankView.jsx";
+import { TRIPOS_QUESTIONS_URL } from "./ppqUtils.js";
 
 const STORAGE_KEY = "revision-tracker-data";
 
@@ -929,6 +931,12 @@ export default function RevisionTracker() {
   const [coursePickerOpen, setCoursePickerOpen] = useState(false);
   const [pickerSearch, setPickerSearch] = useState("");
   const pickerWrapRef = useRef(null);
+  const [mainView, setMainView] = useState("topics");
+  const [ppqDone, setPpqDone] = useState({});
+  const [triposQuestions, setTriposQuestions] = useState(null);
+  const [triposError, setTriposError] = useState(null);
+  const [triposLoading, setTriposLoading] = useState(false);
+  const [triposRetry, setTriposRetry] = useState(0);
 
   useEffect(() => {
     (async () => {
@@ -938,6 +946,9 @@ export default function RevisionTracker() {
           setTopicData(parsed.topics);
           if (Array.isArray(parsed.hiddenIds)) {
             setHiddenCourseIds(new Set(parsed.hiddenIds.filter((id) => ALL_COURSES_ORDERED.some((c) => c.id === id))));
+          }
+          if (parsed.ppqDone && typeof parsed.ppqDone === "object") {
+            setPpqDone(parsed.ppqDone);
           }
         } else {
           setTopicData(parsed);
@@ -949,8 +960,37 @@ export default function RevisionTracker() {
 
   useEffect(() => {
     if (!loaded) return;
-    persistStoredData({ topics: topicData, hiddenIds: Array.from(hiddenCourseIds) });
-  }, [topicData, hiddenCourseIds, loaded]);
+    persistStoredData({
+      topics: topicData,
+      hiddenIds: Array.from(hiddenCourseIds),
+      ppqDone,
+    });
+  }, [topicData, hiddenCourseIds, ppqDone, loaded]);
+
+  useEffect(() => {
+    if (mainView !== "ppq") return;
+    if (triposQuestions !== null) return;
+    let cancelled = false;
+    setTriposLoading(true);
+    setTriposError(null);
+    fetch(TRIPOS_QUESTIONS_URL)
+      .then((r) => {
+        if (!r.ok) throw new Error(r.statusText || String(r.status));
+        return r.json();
+      })
+      .then((data) => {
+        if (!cancelled) setTriposQuestions(Array.isArray(data) ? data : []);
+      })
+      .catch((e) => {
+        if (!cancelled) setTriposError(e.message || "Failed to load");
+      })
+      .finally(() => {
+        if (!cancelled) setTriposLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [mainView, triposQuestions, triposRetry]);
 
   useEffect(() => {
     if (!coursePickerOpen) return;
@@ -1010,6 +1050,7 @@ export default function RevisionTracker() {
   const resetAll = () => {
     if (confirm("Reset all progress? This cannot be undone.")) {
       setTopicData({});
+      setPpqDone({});
     }
   };
 
@@ -1039,6 +1080,33 @@ export default function RevisionTracker() {
           </button>
         </div>
 
+        <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
+          {[
+            { id: "topics", label: "Topics & theory" },
+            { id: "ppq", label: "PPQ bank (tripospro data)" },
+          ].map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setMainView(t.id)}
+              style={{
+                fontSize: 11,
+                padding: "8px 14px",
+                borderRadius: 6,
+                border: mainView === t.id ? "1px solid #818cf8" : "1px solid #1e293b",
+                background: mainView === t.id ? "#1e1b4b" : "#0f172a",
+                color: mainView === t.id ? "#e2e8f0" : "#64748b",
+                cursor: "pointer",
+                fontWeight: mainView === t.id ? 600 : 400,
+              }}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {mainView === "topics" && (
+        <>
         {/* Stats bar */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginTop: 16 }}>
           {[
@@ -1246,10 +1314,9 @@ export default function RevisionTracker() {
             {filtered.every((c) => expanded[c.id]) ? "Collapse All" : "Expand All"}
           </button>
         </div>
-      </div>
 
-      {/* Course list */}
-      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+        {/* Course list */}
+        <div style={{ maxWidth: 1100, margin: "8px auto 0" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           {filtered.map((c) => (
             <CourseCard key={c.id} course={c} topicData={topicData} updateTopic={updateTopic} isExpanded={!!expanded[c.id]} toggleExpand={() => toggleExpand(c.id)} />
@@ -1258,7 +1325,27 @@ export default function RevisionTracker() {
         {!filtered.length && (
           <div style={{ textAlign: "center", padding: 40, color: "#475569", fontSize: 12 }}>No courses match your filters.</div>
         )}
+        </div>
+        </>
+        )}
       </div>
+
+        {mainView === "ppq" && (
+          <div style={{ marginTop: 20 }}>
+            <PpqBankView
+              visibleCourses={visibleCourses}
+              ppqDone={ppqDone}
+              setPpqDone={setPpqDone}
+              triposQuestions={triposQuestions}
+              triposError={triposError}
+              triposLoading={triposLoading}
+              onRetryLoad={() => {
+                setTriposError(null);
+                setTriposRetry((n) => n + 1);
+              }}
+            />
+          </div>
+        )}
     </div>
   );
 }

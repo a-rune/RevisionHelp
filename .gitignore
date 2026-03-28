@@ -2,3 +2,7 @@ node_modules
 dist
 .DS_Store
 *.local
+
+# Optional local backups of progress (JSON exports); keep out of public git
+.local/
+*.user.json
