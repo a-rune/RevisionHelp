@@ -1,16 +1,18 @@
+import type { PpqAttempt } from "./ppqStorage";
+
 /** Question PDFs on the department site (same pattern as tripospro ingest). */
-export function pastPaperPdfUrl(pdfFilename) {
+export function pastPaperPdfUrl(pdfFilename: string | undefined): string {
   const f = (pdfFilename || "").trim();
   if (!f) return "";
   return `https://www.cl.cam.ac.uk/teaching/exams/pastpapers/${encodeURIComponent(f)}`;
 }
 
-export function normalizeSolutionUrl(url) {
+export function normalizeSolutionUrl(url: string | undefined): string {
   return (url || "").trim().replace(/\r$/, "");
 }
 
 /** Stable id across sessions (matches tripos row identity). */
-export function stableQuestionKey(q) {
+export function stableQuestionKey(q: { year: string | number; paper: string | number; question: string | number; topic: string }): string {
   return `${q.year}|${q.paper}|${q.question}|${q.topic}`;
 }
 
@@ -26,7 +28,7 @@ export function formatQuestionKeyForDisplay(key: string): string {
 export const TRIPOS_QUESTIONS_URL =
   "https://raw.githubusercontent.com/olifog/tripospro/main/questions.json";
 
-export function formatDuration(sec) {
+export function formatDuration(sec: number | null | undefined): string {
   if (sec == null || Number.isNaN(sec) || sec < 0) return "—";
   const s = Math.floor(sec);
   const m = Math.floor(s / 60);
@@ -38,7 +40,7 @@ export function formatDuration(sec) {
  * Parse a marks string to 0–1. Supports `12/20`, `75%`, `0.75`, or `75` (percent if >1).
  * Returns null if nothing parseable.
  */
-export function parseMarksRatio(marksStr) {
+export function parseMarksRatio(marksStr: string | null | undefined): number | null {
   if (marksStr == null || typeof marksStr !== "string") return null;
   const t = marksStr.trim();
   if (!t) return null;
@@ -68,7 +70,11 @@ export function parseMarksRatio(marksStr) {
 }
 
 /** Not attempted: dark blue. Attempted: red→green by marks; amber if no parseable mark. */
-export function ppqCellVisualStyle(attempts) {
+export function ppqCellVisualStyle(attempts: PpqAttempt[] | undefined): {
+  background: string;
+  border: string;
+  color: string;
+} {
   if (!attempts?.length) {
     return {
       background: "#0c1929",
@@ -77,7 +83,7 @@ export function ppqCellVisualStyle(attempts) {
     };
   }
 
-  const latest = [...attempts].sort((a, b) => new Date(b.at) - new Date(a.at))[0];
+  const latest = [...attempts].sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime())[0];
   const ratio = parseMarksRatio(latest?.marks);
   if (ratio == null) {
     return {

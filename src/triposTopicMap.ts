@@ -1,9 +1,11 @@
+import type { TriposQuestion } from "./types";
+
 /**
  * Maps tracker `course.id` → exact `topic` string(s) in olifog/tripospro `questions.json`.
  * @see https://github.com/olifog/tripospro/blob/main/questions.json
  * Courses with no matching Tripos topic show an empty list until you add strings here.
  */
-export const TRIPOS_TOPICS_BY_COURSE_ID = {
+export const TRIPOS_TOPICS_BY_COURSE_ID: Record<string, string[]> = {
   bioinfo: ["Bioinformatics"],
   business: ["Business Studies"],
   denotsem: ["Denotational Semantics"],
@@ -38,7 +40,7 @@ export const TRIPOS_TOPICS_BY_COURSE_ID = {
   hlogmodc: ["Hoare Logic and Model Checking"],
 };
 
-export function getQuestionsForCourse(courseId, allQuestions) {
+export function getQuestionsForCourse(courseId: string, allQuestions: TriposQuestion[]): TriposQuestion[] {
   const topics = TRIPOS_TOPICS_BY_COURSE_ID[courseId];
   if (!topics?.length) return [];
   const set = new Set(topics);

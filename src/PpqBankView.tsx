@@ -1,12 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { getQuestionsForCourse } from "./triposTopicMap";
-<<<<<<< Updated upstream:src/PpqBankView.jsx
-import { newAttemptId, paperStorageKey, ppqDataFromParsed } from "./ppqStorage";
-=======
 import { newAttemptId, paperStorageKey, ppqDataFromParsed, type PpqAttempt, type PpqData } from "./ppqStorage";
 import { PpqStopwatch } from "./PpqStopwatch";
->>>>>>> Stashed changes:src/PpqBankView.tsx
 import { formatDuration, normalizeSolutionUrl, pastPaperPdfUrl, ppqCellVisualStyle, stableQuestionKey } from "./ppqUtils";
+import type { CourseWithTerm, TriposQuestion } from "./types";
+import type { Dispatch, SetStateAction } from "react";
 
 function groupQuestionsByPaper(qs) {
   const map = new Map();
@@ -33,92 +31,12 @@ function formatShortTaken(iso) {
   }
 }
 
-function getLatestAttempt(attempts) {
+function getLatestAttempt(attempts: PpqAttempt[] | undefined): PpqAttempt | null {
   if (!attempts?.length) return null;
-  return [...attempts].sort((a, b) => new Date(b.at) - new Date(a.at))[0];
-}
-
-<<<<<<< Updated upstream:src/PpqBankView.jsx
-function Stopwatch({ onLogAttempt }) {
-  const [accum, setAccum] = useState(0);
-  const [runStart, setRunStart] = useState(null);
-  const [, setT] = useState(0);
-
-  useEffect(() => {
-    if (runStart == null) return;
-    const id = setInterval(() => setT((x) => x + 1), 200);
-    return () => clearInterval(id);
-  }, [runStart]);
-
-  const totalMs = runStart != null ? Date.now() - runStart + accum : accum;
-  const totalSec = Math.floor(totalMs / 1000);
-
-  const start = () => setRunStart(Date.now());
-  const pause = () => {
-    if (runStart != null) {
-      setAccum((a) => a + (Date.now() - runStart));
-      setRunStart(null);
-    }
-  };
-  const reset = () => {
-    setRunStart(null);
-    setAccum(0);
-  };
-
-  const [notes, setNotes] = useState("");
-  const [marks, setMarks] = useState("");
-
-  const save = () => {
-    if (totalSec <= 0 && !notes.trim() && !marks.trim()) return;
-    onLogAttempt({ durationSec: totalSec > 0 ? totalSec : null, notes: notes.trim(), marks: marks.trim() });
-    setNotes("");
-    setMarks("");
-    reset();
-  };
-
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
-      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8 }}>
-        <span style={{ fontSize: 14, fontVariantNumeric: "tabular-nums", color: "#f472b6", fontWeight: 700, minWidth: 56 }}>{formatDuration(totalSec)}</span>
-        {runStart == null ? (
-          <button type="button" onClick={start} style={btnSm}>
-            Start
-          </button>
-        ) : (
-          <button type="button" onClick={pause} style={btnSm}>
-            Pause
-          </button>
-        )}
-        <button type="button" onClick={reset} style={{ ...btnSm, opacity: 0.8 }}>
-          Reset
-        </button>
-      </div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "flex-start" }}>
-        <input
-          value={marks}
-          onChange={(e) => setMarks(e.target.value)}
-          placeholder="Marks e.g. 12/20"
-          style={{ ...inpSm, width: 120 }}
-        />
-        <textarea
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          placeholder="Notes for this attempt…"
-          rows={2}
-          style={{ ...inpSm, flex: "1 1 200px", minWidth: 180, resize: "vertical" }}
-        />
-        <button type="button" onClick={save} style={{ ...btnSm, background: "#831843", borderColor: "#f472b6", color: "#fce7f3" }}>
-          Log attempt
-        </button>
-      </div>
-    </div>
-  );
+  return [...attempts].sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime())[0];
 }
 
 const btnSm = {
-=======
-const btnSm: CSSProperties = {
->>>>>>> Stashed changes:src/PpqBankView.tsx
   fontSize: 10,
   padding: "4px 10px",
   background: "#1e293b",
@@ -128,30 +46,7 @@ const btnSm: CSSProperties = {
   cursor: "pointer",
 };
 
-<<<<<<< Updated upstream:src/PpqBankView.jsx
-const inpSm = {
-  fontSize: 10,
-  padding: "6px 8px",
-  background: "#020617",
-  border: "1px solid #334155",
-  borderRadius: 5,
-  color: "#e2e8f0",
-  outline: "none",
-  fontFamily: "inherit",
-};
-
 function QuestionDetailPanel({ q, qKey, qState, onAddAttempt, onDeleteAttempt }) {
-=======
-interface QuestionDetailPanelProps {
-  q: TriposQuestion;
-  qKey: string;
-  qState: { attempts: PpqAttempt[] } | undefined;
-  onAddAttempt: (questionKey: string, attempt: PpqAttempt) => void;
-  onDeleteAttempt: (questionKey: string, id: string) => void;
-}
-
-function QuestionDetailPanel({ q, qKey, qState, onAddAttempt, onDeleteAttempt }: QuestionDetailPanelProps) {
->>>>>>> Stashed changes:src/PpqBankView.tsx
   const pdfUrl = pastPaperPdfUrl(q.pdf);
   const solUrl = normalizeSolutionUrl(q.solutions);
   const label = `${q.year} · paper ${q.paper} · Q${q.question}`;
@@ -224,9 +119,27 @@ function QuestionDetailPanel({ q, qKey, qState, onAddAttempt, onDeleteAttempt }:
   );
 }
 
-export default function PpqBankView({ visibleCourses, ppqData, setPpqData, triposQuestions, triposError, triposLoading, onRetryLoad }) {
+export interface PpqBankViewProps {
+  visibleCourses: CourseWithTerm[];
+  ppqData: PpqData;
+  setPpqData: Dispatch<SetStateAction<PpqData>>;
+  triposQuestions: TriposQuestion[] | null;
+  triposError: string | null;
+  triposLoading: boolean;
+  onRetryLoad?: () => void;
+}
+
+export default function PpqBankView({
+  visibleCourses,
+  ppqData,
+  setPpqData,
+  triposQuestions,
+  triposError,
+  triposLoading,
+  onRetryLoad,
+}: PpqBankViewProps) {
   const [yearFilter, setYearFilter] = useState("all");
-  const [selected, setSelected] = useState(null);
+  const [selected, setSelected] = useState<{ q: TriposQuestion; qKey: string } | null>(null);
 
   useEffect(() => {
     if (!selected) return;
@@ -237,9 +150,9 @@ export default function PpqBankView({ visibleCourses, ppqData, setPpqData, tripo
     return () => document.removeEventListener("keydown", onKey);
   }, [selected]);
 
-  const years = useMemo(() => {
+  const years = useMemo((): string[] => {
     if (!triposQuestions?.length) return [];
-    const y = new Set(triposQuestions.map((q) => q.year));
+    const y = new Set(triposQuestions.map((q) => String(q.year)));
     return [...y].sort((a, b) => Number(b) - Number(a));
   }, [triposQuestions]);
 
@@ -289,11 +202,15 @@ export default function PpqBankView({ visibleCourses, ppqData, setPpqData, tripo
     const reader = new FileReader();
     reader.onload = () => {
       try {
-        const data = JSON.parse(reader.result);
+        const raw = reader.result;
+        const text = typeof raw === "string" ? raw : "";
+        if (!text) return;
+        const data = JSON.parse(text) as { ppqData?: PpqData; ppqDone?: Record<string, boolean> };
         if (data.ppqData && typeof data.ppqData === "object") {
+          const pd = data.ppqData;
           setPpqData((prev) => ({
-            paperNotes: { ...prev.paperNotes, ...(data.ppqData.paperNotes || {}) },
-            questions: { ...prev.questions, ...(data.ppqData.questions || {}) },
+            paperNotes: { ...prev.paperNotes, ...(pd.paperNotes || {}) },
+            questions: { ...prev.questions, ...(pd.questions || {}) },
           }));
         } else if (data.ppqDone && typeof data.ppqDone === "object") {
           const migrated = ppqDataFromParsed({ ppqDone: data.ppqDone });
@@ -364,12 +281,23 @@ export default function PpqBankView({ visibleCourses, ppqData, setPpqData, tripo
         </span>
         <span style={{ fontSize: 9, color: "#475569" }}>One GitHub fetch ·</span>
         <span style={{ fontSize: 9, color: "#64748b", marginLeft: 4 }}>Key</span>
-        {[
-          { t: "Not done", attempts: [] },
-          { t: "No mark", attempts: [{ id: "_", at: "2000-01-01T00:00:00.000Z", marks: "" }] },
-          { t: "25%", attempts: [{ id: "_", at: "2000-01-01T00:00:00.000Z", marks: "5/20" }] },
-          { t: "75%", attempts: [{ id: "_", at: "2000-01-01T00:00:00.000Z", marks: "15/20" }] },
-        ].map(({ t, attempts }) => (
+        {(
+          [
+            { t: "Not done", attempts: [] as PpqAttempt[] },
+            {
+              t: "No mark",
+              attempts: [{ id: "_", at: "2000-01-01T00:00:00.000Z", durationSec: null, notes: "", marks: "" }],
+            },
+            {
+              t: "25%",
+              attempts: [{ id: "_", at: "2000-01-01T00:00:00.000Z", durationSec: null, notes: "", marks: "5/20" }],
+            },
+            {
+              t: "75%",
+              attempts: [{ id: "_", at: "2000-01-01T00:00:00.000Z", durationSec: null, notes: "", marks: "15/20" }],
+            },
+          ] as { t: string; attempts: PpqAttempt[] }[]
+        ).map(({ t, attempts }) => (
           <span key={t} style={{ display: "inline-flex", alignItems: "center", gap: 3, marginLeft: 6 }} title={t}>
             <span
               style={{
@@ -421,7 +349,7 @@ export default function PpqBankView({ visibleCourses, ppqData, setPpqData, tripo
             <div style={{ padding: "0 14px 14px" }}>
               {!total && (
                 <p style={{ fontSize: 11, color: "#64748b", margin: "0 0 8px" }}>
-                  Add topic name(s) in <code style={{ color: "#94a3b8" }}>src/triposTopicMap.js</code> to match{" "}
+                  Add topic name(s) in <code style={{ color: "#94a3b8" }}>src/triposTopicMap.ts</code> to match{" "}
                   <a href="https://github.com/olifog/tripospro/blob/main/questions.json" style={{ color: "#60a5fa" }} rel="noreferrer">
                     questions.json
                   </a>

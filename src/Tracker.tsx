@@ -1,19 +1,15 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-<<<<<<< Updated upstream:src/Tracker.jsx
-import PpqBankView from "./PpqBankView.jsx";
-import { emptyPpqData, ppqDataFromParsed } from "./ppqStorage.js";
-import { TRIPOS_QUESTIONS_URL } from "./ppqUtils.js";
-=======
-import type { Course, CourseWithTerm, TopicData, TriposQuestion } from "./types";
+import type { TopicData, TriposQuestion } from "./types";
 import type { PpqData } from "./ppqStorage";
 import PpqBankView from "./PpqBankView";
+import TodayView from "./TodayView";
 import { emptyPpqData, ppqDataFromParsed } from "./ppqStorage";
 import { TRIPOS_QUESTIONS_URL } from "./ppqUtils";
-import TodayView from "./TodayView";
 import { currentStreak, dailyLogFromParsed, daysWithLogsCount, emptyDailyLog } from "./dailyLog";
+import type { DailyLogByDay } from "./dailyLog";
 import ExportDataView from "./ExportDataView";
 import { emptyCoursePpq, migratePerTopicPpqToCourse, normalizeTopicData, parseCoursePpqFromBlob } from "./coursePpq";
->>>>>>> Stashed changes:src/Tracker.tsx
+import type { CoursePpqMap } from "./coursePpq";
 
 const STORAGE_KEY = "revision-tracker-data";
 
@@ -699,20 +695,9 @@ const ALL_COURSES_ORDERED = Object.entries(COURSES_DATA).flatMap(([term, { cours
   courses.map((c) => ({ ...c, term }))
 );
 
-<<<<<<< Updated upstream:src/Tracker.jsx
-const getStatusColor = (theory, ppq) => {
-=======
 const VALID_COURSE_IDS = new Set(ALL_COURSES_ORDERED.map((c) => c.id));
 
-interface StatusColor {
-  bg: string;
-  border: string;
-  text: string;
-  label: string;
-}
-
-const getStatusColor = (theory: number, ppq: number): StatusColor => {
->>>>>>> Stashed changes:src/Tracker.tsx
+const getStatusColor = (theory, ppq) => {
   const avg = (theory + ppq) / 2;
   if (avg >= 80) return { bg: "#0a2e1a", border: "#16a34a", text: "#4ade80", label: "Strong" };
   if (avg >= 50) return { bg: "#1a2400", border: "#a3a316", text: "#d4de4a", label: "OK" };
@@ -756,20 +741,7 @@ function notesFromTopicData(td) {
   return "";
 }
 
-<<<<<<< Updated upstream:src/Tracker.jsx
-const TopicRow = ({ topic, topicIdx, courseId, data, updateTopic }) => {
-=======
-interface TopicRowProps {
-  topic: string;
-  topicIdx: number;
-  courseId: string;
-  data: TopicData | undefined;
-  coursePpq: number;
-  updateTopic: (courseId: string, topicIdx: number, val: TopicData) => void;
-}
-
-const TopicRow = ({ topic, topicIdx, courseId, data, coursePpq, updateTopic }: TopicRowProps) => {
->>>>>>> Stashed changes:src/Tracker.tsx
+const TopicRow = ({ topic, topicIdx, courseId, data, coursePpq, updateTopic }) => {
   const [notesOpen, setNotesOpen] = useState(false);
   const td = data || { theory: 0 };
   const status = getStatusColor(td.theory, coursePpq);
@@ -858,21 +830,7 @@ const TopicRow = ({ topic, topicIdx, courseId, data, coursePpq, updateTopic }: T
   );
 };
 
-<<<<<<< Updated upstream:src/Tracker.jsx
-const CourseCard = ({ course, topicData, updateTopic, isExpanded, toggleExpand }) => {
-=======
-interface CourseCardProps {
-  course: CourseWithTerm;
-  topicData: Record<string, TopicData>;
-  coursePpqVal: number;
-  onCoursePpqChange: (courseId: string, v: number) => void;
-  updateTopic: (courseId: string, topicIdx: number, val: TopicData) => void;
-  isExpanded: boolean;
-  toggleExpand: () => void;
-}
-
-const CourseCard = ({ course, topicData, coursePpqVal, onCoursePpqChange, updateTopic, isExpanded, toggleExpand }: CourseCardProps) => {
->>>>>>> Stashed changes:src/Tracker.tsx
+const CourseCard = ({ course, topicData, coursePpqVal, onCoursePpqChange, updateTopic, isExpanded, toggleExpand }) => {
   const topics = course.topics;
   const progress = topics.map((_, i) => {
     const td = topicData?.[`${course.id}_${i}`] || { theory: 0 };
@@ -994,65 +952,46 @@ const CourseCard = ({ course, topicData, coursePpqVal, onCoursePpqChange, update
 };
 
 export default function RevisionTracker() {
-  const [topicData, setTopicData] = useState({});
-  const [expanded, setExpanded] = useState({});
+  const [topicData, setTopicData] = useState<Record<string, TopicData>>({});
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [search, setSearch] = useState("");
   /** Hidden course ids — not shown in the list. New courses default to visible (not in set). */
-  const [hiddenCourseIds, setHiddenCourseIds] = useState(() => new Set());
+  const [hiddenCourseIds, setHiddenCourseIds] = useState<Set<string>>(() => new Set());
   const [filterType, setFilterType] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [loaded, setLoaded] = useState(false);
   const [coursePickerOpen, setCoursePickerOpen] = useState(false);
   const [pickerSearch, setPickerSearch] = useState("");
-<<<<<<< Updated upstream:src/Tracker.jsx
-  const pickerWrapRef = useRef(null);
-  const [mainView, setMainView] = useState("topics");
-  const [ppqData, setPpqData] = useState(() => emptyPpqData());
-  const [triposQuestions, setTriposQuestions] = useState(null);
-  const [triposError, setTriposError] = useState(null);
-=======
   const pickerWrapRef = useRef<HTMLDivElement | null>(null);
   const [mainView, setMainView] = useState<"topics" | "ppq" | "today" | "data">("topics");
-  const [dailyLog, setDailyLog] = useState(() => emptyDailyLog());
-  const [coursePpq, setCoursePpq] = useState(() => emptyCoursePpq());
+  const [dailyLog, setDailyLog] = useState<DailyLogByDay>(() => emptyDailyLog());
+  const [coursePpq, setCoursePpq] = useState<CoursePpqMap>(() => emptyCoursePpq());
   const [ppqData, setPpqData] = useState<PpqData>(() => emptyPpqData());
   const [triposQuestions, setTriposQuestions] = useState<TriposQuestion[] | null>(null);
   const [triposError, setTriposError] = useState<string | null>(null);
->>>>>>> Stashed changes:src/Tracker.tsx
   const [triposLoading, setTriposLoading] = useState(false);
   const [triposRetry, setTriposRetry] = useState(0);
 
   useEffect(() => {
     (async () => {
       const parsed = await loadStoredData();
-<<<<<<< Updated upstream:src/Tracker.jsx
-      if (parsed && typeof parsed === "object") {
-        if (parsed.topics != null && typeof parsed.topics === "object") {
-          setTopicData(parsed.topics);
-          if (Array.isArray(parsed.hiddenIds)) {
-            setHiddenCourseIds(new Set(parsed.hiddenIds.filter((id) => ALL_COURSES_ORDERED.some((c) => c.id === id))));
-          }
-        } else {
-          setTopicData(parsed);
-=======
       if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
-        const p = parsed as Record<string, unknown>;
-        let rawTopics: Record<string, TopicData & { ppq?: number }> = {};
+        const p = parsed;
+        let rawTopics = {};
         if (p.topics != null && typeof p.topics === "object" && !Array.isArray(p.topics)) {
-          rawTopics = p.topics as Record<string, TopicData & { ppq?: number }>;
+          rawTopics = p.topics;
         } else {
-          for (const [k, v] of Object.entries(parsed as Record<string, unknown>)) {
+          for (const [k, v] of Object.entries(parsed)) {
             if (k === "hiddenIds" || k === "ppqData" || k === "dailyLog" || k === "topics" || k === "coursePpq") continue;
-            if (v && typeof v === "object" && !Array.isArray(v) && "theory" in (v as object)) {
-              rawTopics[k] = v as TopicData & { ppq?: number };
+            if (v && typeof v === "object" && !Array.isArray(v) && "theory" in v) {
+              rawTopics[k] = v;
             }
           }
->>>>>>> Stashed changes:src/Tracker.tsx
         }
         setTopicData(normalizeTopicData(rawTopics));
         if (Array.isArray(p.hiddenIds)) {
           setHiddenCourseIds(
-            new Set((p.hiddenIds as unknown[]).filter((id): id is string => typeof id === "string" && ALL_COURSES_ORDERED.some((c) => c.id === id)))
+            new Set(p.hiddenIds.filter((id) => typeof id === "string" && ALL_COURSES_ORDERED.some((c) => c.id === id)))
           );
         }
         const fromBlob = parseCoursePpqFromBlob(parsed, VALID_COURSE_IDS);
@@ -1087,8 +1026,8 @@ export default function RevisionTracker() {
         if (!r.ok) throw new Error(r.statusText || String(r.status));
         return r.json();
       })
-      .then((data) => {
-        if (!cancelled) setTriposQuestions(Array.isArray(data) ? data : []);
+      .then((data: unknown) => {
+        if (!cancelled) setTriposQuestions(Array.isArray(data) ? (data as TriposQuestion[]) : []);
       })
       .catch((e) => {
         if (!cancelled) setTriposError(e.message || "Failed to load");
@@ -1166,7 +1105,7 @@ export default function RevisionTracker() {
     }
   };
 
-  const onCoursePpqChange = useCallback((courseId: string, v: number) => {
+  const onCoursePpqChange = useCallback((courseId, v) => {
     setCoursePpq((prev) => ({ ...prev, [courseId]: v }));
   }, []);
 
@@ -1201,12 +1140,6 @@ export default function RevisionTracker() {
         </div>
 
         <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
-<<<<<<< Updated upstream:src/Tracker.jsx
-          {[
-            { id: "topics", label: "Topics & theory" },
-            { id: "ppq", label: "PPQ bank (tripospro data)" },
-          ].map((t) => (
-=======
           {(
             [
               { id: "topics" as const, label: "Topics & theory" },
@@ -1215,7 +1148,6 @@ export default function RevisionTracker() {
               { id: "data" as const, label: "Export & backup" },
             ] as const
           ).map((t) => (
->>>>>>> Stashed changes:src/Tracker.tsx
             <button
               key={t.id}
               type="button"
