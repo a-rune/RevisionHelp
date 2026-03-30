@@ -38,3 +38,17 @@ Past-paper attempts and notes by course, with year filters and import/export of 
 Full-app JSON backup (topics, hidden courses, PPQ data, daily log) for moving machines or merging files.
 
 ![Export & backup](docs/tracker-export.png)
+
+## Extending to other courses:
+
+Change src/courses/catalog.ts
+
+## Extensions:
+
+Add decay for understood courses.
+
+Add dependencies between topics and then update the ancestors of children when we study that topic.
+
+Treat PPQs like compound lifts which hit a bunch of different topics, and then bump those up too.
+
+Currently can be done manually but may need LLM integration at some point.
