@@ -23,6 +23,8 @@ export interface DailyEntry {
   /** Same as PPQ bank attempt (Today tab). */
   ppqMarks?: string;
   ppqDurationSec?: number | null;
+  /** True if the PPQ attempt was open-book / not exam conditions. */
+  ppqOpenBook?: boolean;
   theoryDelta?: number;
   ppqDelta?: number;
 }
@@ -63,6 +65,7 @@ export function dailyLogFromParsed(parsed: unknown): DailyLogByDay {
           : o.ppqDurationSec === null
             ? null
             : undefined;
+      const ppqOpenBook = o.ppqOpenBook === true;
       let topicIndices: number[] | undefined;
       if (Array.isArray(o.topicIndices)) {
         topicIndices = (o.topicIndices as unknown[]).filter((x): x is number => typeof x === "number" && Number.isFinite(x) && x >= 0).map((x) => Math.floor(x));
@@ -86,6 +89,7 @@ export function dailyLogFromParsed(parsed: unknown): DailyLogByDay {
         ppqQuestionKey,
         ppqMarks,
         ppqDurationSec,
+        ppqOpenBook: ppqOpenBook || undefined,
         theoryDelta,
         ppqDelta,
       });

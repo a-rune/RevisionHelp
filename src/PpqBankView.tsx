@@ -76,6 +76,7 @@ function QuestionDetailPanel({ q, qKey, qState, onAddAttempt, onDeleteAttempt })
             durationSec: att.durationSec,
             notes: att.notes,
             marks: att.marks,
+            openBook: att.openBook || undefined,
           })
         }
       />
@@ -100,6 +101,9 @@ function QuestionDetailPanel({ q, qKey, qState, onAddAttempt, onDeleteAttempt })
                     {new Date(a.at).toLocaleString(undefined, { dateStyle: "short", timeStyle: "short" })}
                   </span>
                   <span style={{ color: "#f472b6" }}>{a.durationSec != null ? formatDuration(a.durationSec) : "—"}</span>
+                  {a.openBook ? (
+                    <span style={{ fontSize: 9, color: "#a78bfa", fontWeight: 600 }}>Open book</span>
+                  ) : null}
                   <button
                     type="button"
                     onClick={() => onDeleteAttempt(qKey, a.id)}

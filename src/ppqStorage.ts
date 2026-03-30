@@ -4,6 +4,8 @@ export interface PpqAttempt {
   durationSec: number | null;
   notes: string;
   marks: string;
+  /** Past paper done with notes / resources (not exam conditions). */
+  openBook?: boolean;
 }
 
 export interface PpqData {

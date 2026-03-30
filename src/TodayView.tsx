@@ -179,7 +179,7 @@ export default function TodayView({
   const addQuestionBlock = () => {
     if (isFuture || !qCourseId || !qKey) return;
 
-    const snap = ppqSwRef.current?.getSnapshot() ?? { durationSec: null as number | null, notes: "", marks: "" };
+    const snap = ppqSwRef.current?.getSnapshot() ?? { durationSec: null as number | null, notes: "", marks: "", openBook: false };
     const topicIndices = [...qTopicPicked].sort((a, b) => a - b);
     const text = snap.notes.trim() || `Attempt: ${formatQuestionKeyForDisplay(qKey)}`;
 
@@ -193,6 +193,7 @@ export default function TodayView({
       topicIndices: topicIndices.length ? topicIndices : undefined,
       ppqMarks: snap.marks.trim() || undefined,
       ppqDurationSec: snap.durationSec,
+      ppqOpenBook: snap.openBook || undefined,
       theoryDelta: topicIndices.length ? THEORY_BUMP : undefined,
       ppqDelta: bumpCoursePpq ? PPQ_COURSE_BUMP : undefined,
     });
@@ -230,6 +231,7 @@ export default function TodayView({
                 durationSec: snap.durationSec,
                 notes: snap.notes,
                 marks: snap.marks,
+                openBook: snap.openBook || undefined,
               },
             ],
           },
@@ -712,10 +714,11 @@ function EntryCard({
               ) : null}
             </div>
           )}
-          {e.kind === "question" && (e.ppqDurationSec != null && e.ppqDurationSec > 0 || e.ppqMarks?.trim()) ? (
+          {e.kind === "question" && (e.ppqDurationSec != null && e.ppqDurationSec > 0 || e.ppqMarks?.trim() || e.ppqOpenBook) ? (
             <div style={{ marginTop: 6, fontSize: 10, color: "#f9a8d4", display: "flex", flexWrap: "wrap", gap: 10 }}>
               {e.ppqDurationSec != null && e.ppqDurationSec > 0 ? <span>Time: {formatDuration(e.ppqDurationSec)}</span> : null}
               {e.ppqMarks?.trim() ? <span>Marks: {e.ppqMarks.trim()}</span> : null}
+              {e.ppqOpenBook ? <span style={{ color: "#a78bfa" }}>Open book</span> : null}
             </div>
           ) : null}
           {e.kind === "topic" && course && (

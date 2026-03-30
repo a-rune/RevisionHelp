@@ -5,6 +5,15 @@ export interface PpqAttemptSnapshot {
   durationSec: number | null;
   notes: string;
   marks: string;
+  openBook: boolean;
+}
+
+function parseManualMinutesToSeconds(s: string): number | null {
+  const t = s.trim().replace(",", ".");
+  if (!t) return null;
+  const n = Number(t);
+  if (!Number.isFinite(n) || n <= 0) return null;
+  return Math.round(n * 60);
 }
 
 export interface PpqStopwatchHandle {
@@ -53,6 +62,8 @@ export const PpqStopwatch = forwardRef<PpqStopwatchHandle, PpqStopwatchProps>(fu
   const [, setT] = useState(0);
   const [notes, setNotes] = useState("");
   const [marks, setMarks] = useState("");
+  const [manualMinutes, setManualMinutes] = useState("");
+  const [openBook, setOpenBook] = useState(false);
 
   useEffect(() => {
     if (runStart == null) return;
@@ -78,32 +89,47 @@ export const PpqStopwatch = forwardRef<PpqStopwatchHandle, PpqStopwatchProps>(fu
   const resetAll = () => {
     setNotes("");
     setMarks("");
+    setManualMinutes("");
+    setOpenBook(false);
     resetTimer();
+  };
+
+  const resolvedDurationSec = (): number | null => {
+    const manualSec = parseManualMinutesToSeconds(manualMinutes);
+    if (manualSec != null && manualSec > 0) return manualSec;
+    return totalSec > 0 ? totalSec : null;
   };
 
   useImperativeHandle(ref, () => ({
     getSnapshot: (): PpqAttemptSnapshot => ({
-      durationSec: totalSec > 0 ? totalSec : null,
+      durationSec: resolvedDurationSec(),
       notes: notes.trim(),
       marks: marks.trim(),
+      openBook,
     }),
     reset: resetAll,
   }));
 
   const save = () => {
-    if (totalSec <= 0 && !notes.trim() && !marks.trim()) return;
+    const durationSec = resolvedDurationSec();
+    if (durationSec == null && !notes.trim() && !marks.trim() && !openBook) return;
     onLogAttempt?.({
-      durationSec: totalSec > 0 ? totalSec : null,
+      durationSec,
       notes: notes.trim(),
       marks: marks.trim(),
+      openBook,
     });
     resetAll();
   };
 
+  const displaySec = resolvedDurationSec() ?? totalSec;
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
       <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8 }}>
-        <span style={{ fontSize: 14, fontVariantNumeric: "tabular-nums", color: "#f472b6", fontWeight: 700, minWidth: 56 }}>{formatDuration(totalSec)}</span>
+        <span style={{ fontSize: 14, fontVariantNumeric: "tabular-nums", color: "#f472b6", fontWeight: 700, minWidth: 56 }} title={parseManualMinutesToSeconds(manualMinutes) ? "Using manual time below" : undefined}>
+          {formatDuration(displaySec)}
+        </span>
         {runStart == null ? (
           <button type="button" onClick={start} style={btnSm} disabled={disabled}>
             Start
@@ -114,9 +140,28 @@ export const PpqStopwatch = forwardRef<PpqStopwatchHandle, PpqStopwatchProps>(fu
           </button>
         )}
         <button type="button" onClick={resetTimer} style={{ ...btnSm, opacity: 0.8 }} disabled={disabled}>
-          Reset
+          Reset timer
         </button>
       </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
+        <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 10, color: "#94a3b8", cursor: disabled ? "default" : "pointer" }}>
+          <span style={{ color: "#64748b" }}>Or time (min)</span>
+          <input
+            type="text"
+            inputMode="decimal"
+            value={manualMinutes}
+            onChange={(e) => setManualMinutes(e.target.value)}
+            placeholder="e.g. 45"
+            style={{ ...inpSm, width: 72 }}
+            disabled={disabled}
+          />
+        </label>
+        <span style={{ fontSize: 8, color: "#475569" }}>Overrides timer if set</span>
+      </div>
+      <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 10, color: "#94a3b8", cursor: disabled ? "default" : "pointer" }}>
+        <input type="checkbox" checked={openBook} onChange={(e) => setOpenBook(e.target.checked)} disabled={disabled} style={{ accentColor: "#f472b6" }} />
+        Open book (notes / not exam conditions)
+      </label>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "flex-start" }}>
         <input
           value={marks}
