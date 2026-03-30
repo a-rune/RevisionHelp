@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, Dispatch, SetStateAction } from "react";
 import type { CoursePpqMap } from "./coursePpq";
 import { PpqStopwatch, type PpqStopwatchHandle } from "./PpqStopwatch";
@@ -23,17 +23,31 @@ const PPQ_COURSE_BUMP = 5;
 
 const HEAT_BG = ["#0f172a", "#14532d", "#166534", "#22c55e", "#4ade80"];
 
-function buildWeekColumns(endDate: Date, numWeeks: number): { date: Date; key: string }[][] {
-  const lastMonday = mondayOfWeek(endDate);
-  const firstMonday = new Date(lastMonday);
-  firstMonday.setDate(firstMonday.getDate() - (numWeeks - 1) * 7);
-  const weeks: { date: Date; key: string }[][] = [];
-  for (let w = 0; w < numWeeks; w++) {
-    const col: { date: Date; key: string }[] = [];
+/** Fixed square cells; grid width stays natural (not stretched full-bleed). */
+const HEAT_CELL_PX = 12;
+const HEAT_GAP_PX = 4;
+
+/** Inclusive revision window (DD/MM/YYYY). Weeks are padded to full Mon–Sun columns. */
+const HEATMAP_RANGE_START = startOfDay(new Date(2026, 2, 28)); // 28 Mar 2026
+const HEATMAP_RANGE_END = startOfDay(new Date(2026, 5, 12)); // 12 Jun 2026
+
+type HeatCell = { date: Date; key: string; inRange: boolean };
+
+function buildWeekColumnsForExamRange(): HeatCell[][] {
+  const firstMonday = mondayOfWeek(HEATMAP_RANGE_START);
+  const lastMonday = mondayOfWeek(HEATMAP_RANGE_END);
+  const weeks: HeatCell[][] = [];
+  for (let w = 0; ; w++) {
+    const mon = new Date(firstMonday);
+    mon.setDate(firstMonday.getDate() + w * 7);
+    if (mon.getTime() > lastMonday.getTime()) break;
+    const col: HeatCell[] = [];
     for (let r = 0; r < 7; r++) {
-      const d = new Date(firstMonday);
-      d.setDate(firstMonday.getDate() + w * 7 + r);
-      col.push({ date: d, key: isoDayKey(d) });
+      const d = new Date(mon);
+      d.setDate(mon.getDate() + r);
+      const t = d.getTime();
+      const inRange = t >= HEATMAP_RANGE_START.getTime() && t <= HEATMAP_RANGE_END.getTime();
+      col.push({ date: d, key: isoDayKey(d), inRange });
     }
     weeks.push(col);
   }
@@ -98,7 +112,7 @@ export default function TodayView({
   const selectedDate = useMemo(() => parseDayKey(selectedDayKey), [selectedDayKey]);
   const isFuture = selectedDate != null && selectedDate.getTime() > anchorToday.getTime();
 
-  const weeks = useMemo(() => buildWeekColumns(anchorToday, 52), [anchorToday]);
+  const weeks = useMemo(() => buildWeekColumnsForExamRange(), []);
   const entriesForDay = dailyLog[selectedDayKey]?.entries ?? [];
 
   const coursesWithPpq = useMemo(() => {
@@ -292,51 +306,81 @@ export default function TodayView({
           overflowX: "auto",
         }}
       >
-        <div style={{ fontSize: 9, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.6 }}>Last 52 weeks</div>
-        <div style={{ display: "flex", gap: 6, alignItems: "flex-start" }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 3, paddingTop: 14, flexShrink: 0 }}>
-            {WEEKDAY_SHORT.map((d) => (
-              <div key={d} style={{ fontSize: 8, color: "#475569", height: 11, lineHeight: "11px", width: 22 }}>
-                {d}
-              </div>
-            ))}
-          </div>
-          <div style={{ display: "flex", gap: 3, flex: 1, minWidth: 0 }}>
-            {weeks.map((col, wi) => (
-              <div key={wi} style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-                {col.map(({ date, key }) => {
+        <div style={{ fontSize: 9, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.6 }}>
+          Exam term · 28 Mar – 12 Jun 2026 · {weeks.length} weeks
+        </div>
+        <div style={{ paddingBottom: 4 }}>
+          <div
+            style={{
+              display: "grid",
+              width: "fit-content",
+              maxWidth: "100%",
+              gridTemplateColumns: `minmax(26px, auto) repeat(${weeks.length}, ${HEAT_CELL_PX}px)`,
+              gridTemplateRows: `repeat(7, ${HEAT_CELL_PX}px)`,
+              gap: HEAT_GAP_PX,
+              alignItems: "stretch",
+              justifyItems: "stretch",
+            }}
+          >
+            {WEEKDAY_SHORT.map((d, ri) => (
+              <Fragment key={d}>
+                <div
+                  style={{
+                    fontSize: 8,
+                    color: "#475569",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "flex-end",
+                    paddingRight: 2,
+                    lineHeight: 1,
+                    minHeight: HEAT_CELL_PX,
+                  }}
+                >
+                  {d}
+                </div>
+                {weeks.map((col, wi) => {
+                  const { date, key, inRange } = col[ri];
                   const inten = dayIntensity(key, dailyLog);
                   const isSel = key === selectedDayKey;
                   const fut = date.getTime() > anchorToday.getTime();
+                  const dead = fut || !inRange;
                   return (
                     <button
                       key={key}
                       type="button"
-                      title={`${key} · ${fut ? "future" : `${dailyLog[key]?.entries?.length ?? 0} block(s)`}`}
-                      onClick={() => !fut && setSelectedDayKey(key)}
-                      disabled={fut}
+                      title={
+                        dead
+                          ? !inRange
+                            ? `${key} · outside revision window`
+                            : `${key} · future`
+                          : `${key} · ${dailyLog[key]?.entries?.length ?? 0} block(s)`
+                      }
+                      onClick={() => !dead && setSelectedDayKey(key)}
+                      disabled={dead}
                       style={{
-                        width: 11,
-                        height: 11,
+                        width: HEAT_CELL_PX,
+                        height: HEAT_CELL_PX,
+                        minWidth: HEAT_CELL_PX,
+                        minHeight: HEAT_CELL_PX,
                         padding: 0,
                         borderRadius: 2,
                         border: isSel ? "1px solid #93c5fd" : "1px solid #1e293b",
-                        background: fut ? "#020617" : HEAT_BG[inten],
-                        opacity: fut ? 0.25 : 1,
-                        cursor: fut ? "default" : "pointer",
+                        background: dead ? "#020617" : HEAT_BG[inten],
+                        opacity: dead ? 0.22 : 1,
+                        cursor: dead ? "default" : "pointer",
                         boxSizing: "border-box",
                       }}
                     />
                   );
                 })}
-              </div>
+              </Fragment>
             ))}
           </div>
         </div>
         <div style={{ display: "flex", gap: 12, marginTop: 10, flexWrap: "wrap", alignItems: "center" }}>
           <span style={{ fontSize: 8, color: "#475569" }}>Less</span>
           {HEAT_BG.map((c, i) => (
-            <span key={i} style={{ width: 11, height: 11, borderRadius: 2, background: c, border: "1px solid #1e293b" }} />
+            <span key={i} style={{ width: HEAT_CELL_PX, height: HEAT_CELL_PX, borderRadius: 2, background: c, border: "1px solid #1e293b" }} />
           ))}
           <span style={{ fontSize: 8, color: "#475569" }}>More</span>
         </div>
