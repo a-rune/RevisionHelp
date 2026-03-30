@@ -133,6 +133,38 @@ export function parseDayKey(key: string): Date | null {
   return startOfDay(d);
 }
 
+/** Persisted heatmap range (`YYYY-MM-DD`, local calendar). */
+export type HeatmapRangeIso = { start: string; end: string };
+
+export function defaultHeatmapYearBoundsIso(): HeatmapRangeIso {
+  const y = new Date().getFullYear();
+  return {
+    start: isoDayKey(startOfDay(new Date(y, 0, 1))),
+    end: isoDayKey(startOfDay(new Date(y, 11, 31))),
+  };
+}
+
+/** Read heatmap range from stored JSON; invalid or missing → null. */
+export function parseHeatmapRangeIso(raw: unknown): HeatmapRangeIso | null {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+  const o = raw as Record<string, unknown>;
+  if (typeof o.start !== "string" || typeof o.end !== "string") return null;
+  const start = parseDayKey(o.start);
+  const end = parseDayKey(o.end);
+  if (!start || !end) return null;
+  if (start.getTime() > end.getTime()) return null;
+  return { start: isoDayKey(start), end: isoDayKey(end) };
+}
+
+/** Convert persisted range to `Date`s; invalid strings fall back to Jan 1–Dec 31 (current year). */
+export function datesFromHeatmapRangeIso(r: HeatmapRangeIso): { start: Date; end: Date } {
+  const start = parseDayKey(r.start);
+  const end = parseDayKey(r.end);
+  if (start && end && start.getTime() <= end.getTime()) return { start, end };
+  const b = defaultHeatmapYearBoundsIso();
+  return { start: parseDayKey(b.start)!, end: parseDayKey(b.end)! };
+}
+
 /** Activity level 0–4 for heatmap. */
 export function dayIntensity(dayKey: string, log: DailyLogByDay): number {
   const entries = log[dayKey]?.entries;

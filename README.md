@@ -1,6 +1,6 @@
-# Part II CST — Revision Tracker
+# retr0spect
 
-Retrospective timetable with per-topic theory sliders, course PPQ confidence, a daily log with heatmap, a PPQ bank wired to Tripos Pro–style data, and JSON export/backup. Data lives in the browser (local storage).
+Part II CST revision tracker — retrospective timetable with per-topic theory sliders, course PPQ confidence, a daily log with heatmap, a PPQ bank wired to Tripos Pro–style data, and JSON export/backup. Data lives in the browser (local storage).
 
 ## Run locally
 

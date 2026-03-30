@@ -80,7 +80,7 @@ export default function ExportDataView({
   const jsonText = JSON.stringify(fullPayload, null, 2);
 
   const exportDownload = () => {
-    downloadJson("revision-help-full-backup", fullPayload);
+    downloadJson("retr0spect-full-backup", fullPayload);
   };
 
   const copyJson = async () => {

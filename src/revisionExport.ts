@@ -15,7 +15,7 @@ export const REVISION_SCHEMA_VERSION = 1;
 export interface FullRevisionExport {
   schemaVersion: number;
   exportedAt: string;
-  app: "revision-help";
+  app: "retr0spect";
   topics: Record<string, TopicData>;
   /** Per-course PPQ confidence (0–100) for the Topics tab. */
   coursePpq: CoursePpqMap;
@@ -34,7 +34,7 @@ export function buildFullExportPayload(input: {
   return {
     schemaVersion: REVISION_SCHEMA_VERSION,
     exportedAt: new Date().toISOString(),
-    app: "revision-help",
+    app: "retr0spect",
     topics: input.topicData,
     coursePpq: { ...input.coursePpq },
     hiddenIds: Array.from(input.hiddenCourseIds),

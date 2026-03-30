@@ -1,5 +1,5 @@
 import type { CoursePpqMap } from "./coursePpq";
-import type { DailyLogByDay } from "./dailyLog";
+import type { DailyLogByDay, HeatmapRangeIso } from "./dailyLog";
 import type { PpqData } from "./ppqStorage";
 import type { TopicData } from "./types";
 
@@ -11,6 +11,7 @@ export type RevisionPersistPayload = {
   coursePpq: CoursePpqMap;
   ppqData: PpqData;
   dailyLog: DailyLogByDay;
+  heatmapRange: HeatmapRangeIso;
 };
 
 export async function loadStoredRevisionData(): Promise<unknown> {

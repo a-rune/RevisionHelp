@@ -5,8 +5,15 @@ import PpqBankView from "./PpqBankView";
 import TodayView from "./TodayView";
 import { emptyPpqData, ppqDataFromParsed } from "./ppqStorage";
 import { TRIPOS_QUESTIONS_URL } from "./ppqUtils";
-import { currentStreak, dailyLogFromParsed, daysWithLogsCount, emptyDailyLog } from "./dailyLog";
-import type { DailyLogByDay } from "./dailyLog";
+import {
+  currentStreak,
+  dailyLogFromParsed,
+  daysWithLogsCount,
+  defaultHeatmapYearBoundsIso,
+  emptyDailyLog,
+  parseHeatmapRangeIso,
+} from "./dailyLog";
+import type { DailyLogByDay, HeatmapRangeIso } from "./dailyLog";
 import ExportDataView from "./ExportDataView";
 import { emptyCoursePpq, migratePerTopicPpqToCourse, normalizeTopicData, parseCoursePpqFromBlob } from "./coursePpq";
 import type { CoursePpqMap } from "./coursePpq";
@@ -27,6 +34,7 @@ export default function RevisionTracker() {
   const pickerWrapRef = useRef<HTMLDivElement | null>(null);
   const [mainView, setMainView] = useState<"topics" | "ppq" | "today" | "data">("topics");
   const [dailyLog, setDailyLog] = useState<DailyLogByDay>(() => emptyDailyLog());
+  const [heatmapRange, setHeatmapRange] = useState<HeatmapRangeIso>(() => defaultHeatmapYearBoundsIso());
   const [coursePpq, setCoursePpq] = useState<CoursePpqMap>(() => emptyCoursePpq());
   const [ppqData, setPpqData] = useState<PpqData>(() => emptyPpqData());
   const [triposQuestions, setTriposQuestions] = useState<TriposQuestion[] | null>(null);
@@ -60,6 +68,9 @@ export default function RevisionTracker() {
         setCoursePpq(fromBlob ?? migratePerTopicPpqToCourse(rawTopics, VALID_COURSE_IDS));
         setPpqData(ppqDataFromParsed(parsed));
         setDailyLog(dailyLogFromParsed(parsed));
+        setHeatmapRange(parseHeatmapRangeIso(p.heatmapRange) ?? defaultHeatmapYearBoundsIso());
+      } else {
+        setHeatmapRange(defaultHeatmapYearBoundsIso());
       }
       setLoaded(true);
     })();
@@ -73,8 +84,9 @@ export default function RevisionTracker() {
       coursePpq,
       ppqData,
       dailyLog,
+      heatmapRange,
     });
-  }, [topicData, hiddenCourseIds, coursePpq, ppqData, dailyLog, loaded]);
+  }, [topicData, hiddenCourseIds, coursePpq, ppqData, dailyLog, heatmapRange, loaded]);
 
   // Single GET of static questions.json from GitHub (tripospro repo). No tripos.pro API; no repeated polling.
   useEffect(() => {
@@ -188,7 +200,7 @@ export default function RevisionTracker() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
           <div>
             <h1 style={{ fontSize: 22, fontWeight: 800, margin: 0, background: "linear-gradient(135deg, #818cf8, #f472b6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-              Part II CST — Revision Tracker
+              Retr0spect
             </h1>
             <p style={{ fontSize: 10, color: "#475569", margin: "4px 0 0", letterSpacing: 1, textTransform: "uppercase" }}>
               Cambridge 2025–26 · {streakDays} day streak · {daysLogged} days logged ·{" "}
@@ -483,6 +495,8 @@ export default function RevisionTracker() {
               setTriposError(null);
               setTriposRetry((n) => n + 1);
             }}
+            heatmapRange={heatmapRange}
+            setHeatmapRange={setHeatmapRange}
           />
         </div>
       )}

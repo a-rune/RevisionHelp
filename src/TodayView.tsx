@@ -7,6 +7,7 @@ import { getQuestionsForCourse } from "./triposTopicMap";
 import type { CourseWithTerm, TopicData, TriposQuestion } from "./types";
 import { formatDuration, formatQuestionKeyForDisplay, stableQuestionKey } from "./ppqUtils";
 import {
+  datesFromHeatmapRangeIso,
   dayIntensity,
   isoDayKey,
   mondayOfWeek,
@@ -15,6 +16,7 @@ import {
   startOfDay,
   type DailyEntry,
   type DailyLogByDay,
+  type HeatmapRangeIso,
 } from "./dailyLog";
 
 const MS_DAY = 86400000;
@@ -27,15 +29,18 @@ const HEAT_BG = ["#0f172a", "#14532d", "#166534", "#22c55e", "#4ade80"];
 const HEAT_CELL_PX = 12;
 const HEAT_GAP_PX = 4;
 
-/** Inclusive revision window (DD/MM/YYYY). Weeks are padded to full Mon–Sun columns. */
-const HEATMAP_RANGE_START = startOfDay(new Date(2026, 2, 28)); // 28 Mar 2026
-const HEATMAP_RANGE_END = startOfDay(new Date(2026, 5, 12)); // 12 Jun 2026
-
+/** Inclusive revision window. Weeks are padded to full Mon–Sun columns. */
 type HeatCell = { date: Date; key: string; inRange: boolean };
 
-function buildWeekColumnsForExamRange(): HeatCell[][] {
-  const firstMonday = mondayOfWeek(HEATMAP_RANGE_START);
-  const lastMonday = mondayOfWeek(HEATMAP_RANGE_END);
+function formatHeatmapDay(d: Date): string {
+  return d.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+}
+
+function buildWeekColumnsForRange(rangeStart: Date, rangeEnd: Date): HeatCell[][] {
+  const rangeT0 = rangeStart.getTime();
+  const rangeT1 = rangeEnd.getTime();
+  const firstMonday = mondayOfWeek(rangeStart);
+  const lastMonday = mondayOfWeek(rangeEnd);
   const weeks: HeatCell[][] = [];
   for (let w = 0; ; w++) {
     const mon = new Date(firstMonday);
@@ -46,7 +51,7 @@ function buildWeekColumnsForExamRange(): HeatCell[][] {
       const d = new Date(mon);
       d.setDate(mon.getDate() + r);
       const t = d.getTime();
-      const inRange = t >= HEATMAP_RANGE_START.getTime() && t <= HEATMAP_RANGE_END.getTime();
+      const inRange = t >= rangeT0 && t <= rangeT1;
       col.push({ date: d, key: isoDayKey(d), inRange });
     }
     weeks.push(col);
@@ -74,6 +79,8 @@ export interface TodayViewProps {
   triposLoading: boolean;
   triposError: string | null;
   onRetryTripos: () => void;
+  heatmapRange: HeatmapRangeIso;
+  setHeatmapRange: Dispatch<SetStateAction<HeatmapRangeIso>>;
 }
 
 export default function TodayView({
@@ -88,10 +95,17 @@ export default function TodayView({
   triposLoading,
   triposError,
   onRetryTripos,
+  heatmapRange,
+  setHeatmapRange,
 }: TodayViewProps) {
   const [anchorToday] = useState(() => startOfDay(new Date()));
   const todayKey = isoDayKey(anchorToday);
   const [selectedDayKey, setSelectedDayKey] = useState(todayKey);
+
+  const { start: heatmapRangeStart, end: heatmapRangeEnd } = useMemo(
+    () => datesFromHeatmapRangeIso(heatmapRange),
+    [heatmapRange],
+  );
 
   /** Rigid block types + optional note-only. */
   const [blockMode, setBlockMode] = useState<"theory" | "question" | "note">("theory");
@@ -112,8 +126,26 @@ export default function TodayView({
   const selectedDate = useMemo(() => parseDayKey(selectedDayKey), [selectedDayKey]);
   const isFuture = selectedDate != null && selectedDate.getTime() > anchorToday.getTime();
 
-  const weeks = useMemo(() => buildWeekColumnsForExamRange(), []);
+  const weeks = useMemo(
+    () => buildWeekColumnsForRange(heatmapRangeStart, heatmapRangeEnd),
+    [heatmapRangeStart, heatmapRangeEnd],
+  );
   const entriesForDay = dailyLog[selectedDayKey]?.entries ?? [];
+
+  useEffect(() => {
+    setSelectedDayKey((prev) => {
+      const t = parseDayKey(prev);
+      if (!t) return prev;
+      const t0 = heatmapRangeStart.getTime();
+      const t1 = heatmapRangeEnd.getTime();
+      const st = t.getTime();
+      if (st >= t0 && st <= t1) return prev;
+      const todayT = anchorToday.getTime();
+      if (todayT >= t0 && todayT <= t1) return isoDayKey(anchorToday);
+      if (todayT > t1) return isoDayKey(heatmapRangeEnd);
+      return isoDayKey(heatmapRangeStart);
+    });
+  }, [heatmapRangeStart, heatmapRangeEnd, anchorToday]);
 
   const coursesWithPpq = useMemo(() => {
     const qs = triposQuestions ?? [];
@@ -308,8 +340,75 @@ export default function TodayView({
           overflowX: "auto",
         }}
       >
-        <div style={{ fontSize: 9, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.6 }}>
-          Exam term · 28 Mar – 12 Jun 2026 · {weeks.length} weeks
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            gap: "10px 14px",
+            marginBottom: 10,
+            rowGap: 8,
+          }}
+        >
+          <div style={{ fontSize: 9, color: "#64748b", textTransform: "uppercase", letterSpacing: 0.6 }}>
+            Heatmap · {formatHeatmapDay(heatmapRangeStart)} – {formatHeatmapDay(heatmapRangeEnd)} · {weeks.length} week{weeks.length === 1 ? "" : "s"}
+          </div>
+          <label style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 10, color: "#94a3b8" }}>
+            <span style={{ color: "#64748b" }}>Start</span>
+            <input
+              type="date"
+              value={heatmapRange.start}
+              onChange={(e) => {
+                const v = e.target.value;
+                if (!v) return;
+                const parsed = parseDayKey(v);
+                if (!parsed) return;
+                setHeatmapRange((prev) => {
+                  const endD = parseDayKey(prev.end);
+                  const startIso = isoDayKey(parsed);
+                  if (!endD) return { ...prev, start: startIso };
+                  if (parsed.getTime() > endD.getTime()) return { start: startIso, end: startIso };
+                  return { ...prev, start: startIso };
+                });
+              }}
+              style={{
+                fontSize: 11,
+                color: "#e2e8f0",
+                background: "#020617",
+                border: "1px solid #334155",
+                borderRadius: 4,
+                padding: "4px 6px",
+              }}
+            />
+          </label>
+          <label style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 10, color: "#94a3b8" }}>
+            <span style={{ color: "#64748b" }}>End</span>
+            <input
+              type="date"
+              value={heatmapRange.end}
+              onChange={(e) => {
+                const v = e.target.value;
+                if (!v) return;
+                const parsed = parseDayKey(v);
+                if (!parsed) return;
+                setHeatmapRange((prev) => {
+                  const startD = parseDayKey(prev.start);
+                  const endIso = isoDayKey(parsed);
+                  if (!startD) return { ...prev, end: endIso };
+                  if (parsed.getTime() < startD.getTime()) return { start: endIso, end: endIso };
+                  return { ...prev, end: endIso };
+                });
+              }}
+              style={{
+                fontSize: 11,
+                color: "#e2e8f0",
+                background: "#020617",
+                border: "1px solid #334155",
+                borderRadius: 4,
+                padding: "4px 6px",
+              }}
+            />
+          </label>
         </div>
         <div style={{ paddingBottom: 4 }}>
           <div
