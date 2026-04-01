@@ -6,3 +6,4 @@ dist
 # Optional local backups of progress (JSON exports); keep out of public git
 .local/
 *.user.json
+cursor_agent_sesh.md
