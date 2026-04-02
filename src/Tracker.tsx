@@ -192,22 +192,33 @@ export default function RevisionTracker() {
     return c.name.toLowerCase().includes(q) || c.id.toLowerCase().includes(q);
   });
 
-  if (!loaded) return <div style={{ color: "#64748b", padding: 40, textAlign: "center", fontFamily: "'JetBrains Mono', monospace" }}>Loading...</div>;
+  if (!loaded) return <div style={{ color: "var(--cg-muted-dim)", padding: 40, textAlign: "center", fontFamily: "'JetBrains Mono', monospace" }}>Loading...</div>;
 
   return (
-    <div style={{ fontFamily: "'JetBrains Mono', 'SF Mono', 'Fira Code', monospace", background: "#020617", color: "#e2e8f0", minHeight: "100vh", padding: "20px 16px" }}>
+    <div style={{ fontFamily: "'JetBrains Mono', 'SF Mono', 'Fira Code', monospace", background: "var(--cg-bg-deep)", color: "var(--cg-text)", minHeight: "100vh", padding: "20px 16px" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto 20px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
           <div>
-            <h1 style={{ fontSize: 22, fontWeight: 800, margin: 0, background: "linear-gradient(135deg, #818cf8, #f472b6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+            <h1
+              style={{
+                fontSize: 22,
+                fontWeight: 800,
+                margin: 0,
+                background: "var(--cg-title-gradient)",
+                WebkitBackgroundClip: "text",
+                backgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                color: "transparent",
+              }}
+            >
               Retr0spect - Part II CST Revision timetable
             </h1>
-            <p style={{ fontSize: 10, color: "#475569", margin: "4px 0 0", letterSpacing: 1, textTransform: "uppercase" }}>
+            <p style={{ fontSize: 10, color: "var(--cg-text-dim)", margin: "4px 0 0", letterSpacing: 1, textTransform: "uppercase" }}>
               Cambridge 2025–26 · {streakDays} day streak · {daysLogged} days logged ·{" "}
               {visibleCount === allCourses.length ? `${allCourses.length} courses` : `${visibleCount} of ${allCourses.length} courses`} · {totalTopics} topics in selection
             </p>
           </div>
-          <button type="button" onClick={resetAll} style={{ fontSize: 9, background: "none", border: "1px solid #1e293b", color: "#475569", borderRadius: 4, padding: "4px 10px", cursor: "pointer" }}>
+          <button type="button" onClick={resetAll} style={{ fontSize: 9, background: "none", border: "1px solid var(--cg-surface-2)", color: "var(--cg-text-dim)", borderRadius: 4, padding: "4px 10px", cursor: "pointer" }}>
             Reset All
           </button>
         </div>
@@ -229,9 +240,9 @@ export default function RevisionTracker() {
                 fontSize: 11,
                 padding: "8px 14px",
                 borderRadius: 6,
-                border: mainView === t.id ? "1px solid #818cf8" : "1px solid #1e293b",
-                background: mainView === t.id ? "#1e1b4b" : "#0f172a",
-                color: mainView === t.id ? "#e2e8f0" : "#64748b",
+                border: mainView === t.id ? "1px solid var(--cg-tab-active-border)" : "1px solid var(--cg-surface-2)",
+                background: mainView === t.id ? "var(--cg-tab-active-bg)" : "var(--cg-surface)",
+                color: mainView === t.id ? "var(--cg-text)" : "var(--cg-muted-dim)",
                 cursor: "pointer",
                 fontWeight: mainView === t.id ? 600 : 400,
               }}
@@ -245,17 +256,17 @@ export default function RevisionTracker() {
           <>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginTop: 16 }}>
               {[
-                { label: "Overall", value: overall, color: "#a78bfa" },
-                { label: "Theory", value: overallTheory, color: "#818cf8" },
-                { label: "PPQs", value: overallPPQ, color: "#f472b6" },
+                { label: "Overall", value: overall, color: "var(--cg-overall)" },
+                { label: "Theory", value: overallTheory, color: "var(--cg-theory)" },
+                { label: "PPQs", value: overallPPQ, color: "var(--cg-ppq)" },
               ].map((s) => (
-                <div key={s.label} style={{ background: "#0f172a", borderRadius: 6, padding: "10px 14px", border: "1px solid #1e293b" }}>
-                  <div style={{ fontSize: 9, color: "#64748b", textTransform: "uppercase", letterSpacing: 1 }}>{s.label}</div>
+                <div key={s.label} style={{ background: "var(--cg-surface)", borderRadius: 6, padding: "10px 14px", border: "1px solid var(--cg-surface-2)" }}>
+                  <div style={{ fontSize: 9, color: "var(--cg-muted-dim)", textTransform: "uppercase", letterSpacing: 1 }}>{s.label}</div>
                   <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginTop: 4 }}>
                     <span style={{ fontSize: 24, fontWeight: 800, color: s.color }}>{s.value}</span>
-                    <span style={{ fontSize: 10, color: "#475569" }}>%</span>
+                    <span style={{ fontSize: 10, color: "var(--cg-text-dim)" }}>%</span>
                   </div>
-                  <div style={{ height: 4, borderRadius: 2, background: "#1e293b", marginTop: 6, overflow: "hidden" }}>
+                  <div style={{ height: 4, borderRadius: 2, background: "var(--cg-surface-2)", marginTop: 6, overflow: "hidden" }}>
                     <div style={{ height: "100%", width: `${s.value}%`, background: s.color, borderRadius: 2, transition: "width 0.5s" }} />
                   </div>
                 </div>
@@ -264,14 +275,14 @@ export default function RevisionTracker() {
 
             <div style={{ display: "flex", gap: 12, marginTop: 12, flexWrap: "wrap" }}>
               {[
-                { label: "Critical (<20%)", color: "#dc2626" },
-                { label: "Needs Work (20-50%)", color: "#d97706" },
-                { label: "OK (50-80%)", color: "#a3a316" },
-                { label: "Strong (80%+)", color: "#16a34a" },
+                { label: "Critical (<20%)", color: "#fb7185" },
+                { label: "Needs Work (20-50%)", color: "#fb923c" },
+                { label: "OK (50-80%)", color: "#facc15" },
+                { label: "Strong (80%+)", color: "#6ee7b7" },
               ].map((l) => (
                 <div key={l.label} style={{ display: "flex", alignItems: "center", gap: 4 }}>
                   <div style={{ width: 8, height: 8, borderRadius: 2, background: l.color }} />
-                  <span style={{ fontSize: 9, color: "#64748b" }}>{l.label}</span>
+                  <span style={{ fontSize: 9, color: "var(--cg-muted-dim)" }}>{l.label}</span>
                 </div>
               ))}
             </div>
@@ -281,7 +292,7 @@ export default function RevisionTracker() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search courses or topics..."
-                style={{ flex: "1 1 200px", maxWidth: 300, fontSize: 11, padding: "6px 10px", background: "#0f172a", border: "1px solid #1e293b", borderRadius: 5, color: "#e2e8f0", outline: "none" }}
+                style={{ flex: "1 1 200px", maxWidth: 300, fontSize: 11, padding: "6px 10px", background: "var(--cg-surface)", border: "1px solid var(--cg-surface-2)", borderRadius: 5, color: "var(--cg-text)", outline: "none" }}
               />
               <div ref={pickerWrapRef} style={{ position: "relative" }}>
                 <button
@@ -290,10 +301,10 @@ export default function RevisionTracker() {
                   style={{
                     fontSize: 10,
                     padding: "6px 12px",
-                    background: coursePickerOpen ? "#1e3a5f" : "#0f172a",
-                    border: "1px solid #1e293b",
+                    background: coursePickerOpen ? "var(--cg-picker-open)" : "var(--cg-surface)",
+                    border: "1px solid var(--cg-surface-2)",
                     borderRadius: 5,
-                    color: "#94a3b8",
+                    color: "var(--cg-muted)",
                     cursor: "pointer",
                     whiteSpace: "nowrap",
                   }}
@@ -312,15 +323,15 @@ export default function RevisionTracker() {
                       maxHeight: 420,
                       display: "flex",
                       flexDirection: "column",
-                      background: "#0f172a",
-                      border: "1px solid #334155",
+                      background: "var(--cg-surface)",
+                      border: "1px solid var(--cg-border)",
                       borderRadius: 8,
                       boxShadow: "0 12px 40px rgba(0,0,0,0.45)",
                       overflow: "hidden",
                     }}
                     onMouseDown={(e) => e.stopPropagation()}
                   >
-                    <div style={{ padding: "10px 12px", borderBottom: "1px solid #1e293b", fontSize: 10, color: "#94a3b8" }}>
+                    <div style={{ padding: "10px 12px", borderBottom: "1px solid var(--cg-surface-2)", fontSize: 10, color: "var(--cg-muted)" }}>
                       Show or hide courses (like Discord channel list). Checked = visible in the tracker.
                     </div>
                     <input
@@ -331,10 +342,10 @@ export default function RevisionTracker() {
                         margin: "8px 12px 0",
                         fontSize: 11,
                         padding: "6px 10px",
-                        background: "#020617",
-                        border: "1px solid #1e293b",
+                        background: "var(--cg-bg-deep)",
+                        border: "1px solid var(--cg-surface-2)",
                         borderRadius: 5,
-                        color: "#e2e8f0",
+                        color: "var(--cg-text)",
                         outline: "none",
                       }}
                     />
@@ -342,14 +353,14 @@ export default function RevisionTracker() {
                       <button
                         type="button"
                         onClick={() => setHiddenCourseIds(new Set())}
-                        style={{ fontSize: 9, padding: "4px 8px", background: "#1e293b", border: "none", color: "#94a3b8", borderRadius: 4, cursor: "pointer" }}
+                        style={{ fontSize: 9, padding: "4px 8px", background: "var(--cg-surface-2)", border: "none", color: "var(--cg-muted)", borderRadius: 4, cursor: "pointer" }}
                       >
                         Show all
                       </button>
                       <button
                         type="button"
                         onClick={() => setHiddenCourseIds(new Set(allCourses.map((c) => c.id)))}
-                        style={{ fontSize: 9, padding: "4px 8px", background: "#1e293b", border: "none", color: "#94a3b8", borderRadius: 4, cursor: "pointer" }}
+                        style={{ fontSize: 9, padding: "4px 8px", background: "var(--cg-surface-2)", border: "none", color: "var(--cg-muted)", borderRadius: 4, cursor: "pointer" }}
                       >
                         Hide all
                       </button>
@@ -362,7 +373,7 @@ export default function RevisionTracker() {
                             return next;
                           });
                         }}
-                        style={{ fontSize: 9, padding: "4px 8px", background: "#1e293b", border: "none", color: "#94a3b8", borderRadius: 4, cursor: "pointer" }}
+                        style={{ fontSize: 9, padding: "4px 8px", background: "var(--cg-surface-2)", border: "none", color: "var(--cg-muted)", borderRadius: 4, cursor: "pointer" }}
                       >
                         Hide filtered
                       </button>
@@ -372,7 +383,7 @@ export default function RevisionTracker() {
                           const keep = new Set(pickerCourses.map((c) => c.id));
                           setHiddenCourseIds(new Set(allCourses.filter((c) => !keep.has(c.id)).map((c) => c.id)));
                         }}
-                        style={{ fontSize: 9, padding: "4px 8px", background: "#1e293b", border: "none", color: "#94a3b8", borderRadius: 4, cursor: "pointer" }}
+                        style={{ fontSize: 9, padding: "4px 8px", background: "var(--cg-surface-2)", border: "none", color: "var(--cg-muted)", borderRadius: 4, cursor: "pointer" }}
                       >
                         Show only filtered
                       </button>
@@ -391,26 +402,26 @@ export default function RevisionTracker() {
                               borderRadius: 4,
                               cursor: "pointer",
                               fontSize: 11,
-                              color: visible ? "#e2e8f0" : "#64748b",
+                              color: visible ? "var(--cg-text)" : "var(--cg-muted-dim)",
                             }}
                           >
                             <input
                               type="checkbox"
                               checked={visible}
                               onChange={(e) => setCourseHidden(c.id, !e.target.checked)}
-                              style={{ cursor: "pointer", accentColor: "#818cf8" }}
+                              style={{ cursor: "pointer", accentColor: "var(--cg-accent)" }}
                             />
                             <span style={{ flex: 1, minWidth: 0 }}>
                               {c.name}
                               {c.isModule && (
-                                <span style={{ marginLeft: 6, fontSize: 8, color: "#60a5fa", fontWeight: 600 }}>MODULE</span>
+                                <span style={{ marginLeft: 6, fontSize: 8, color: "var(--cg-link)", fontWeight: 600 }}>MODULE</span>
                               )}
                             </span>
                           </label>
                         );
                       })}
                       {!pickerCourses.length && (
-                        <div style={{ padding: 16, textAlign: "center", color: "#64748b", fontSize: 11 }}>No courses match search.</div>
+                        <div style={{ padding: 16, textAlign: "center", color: "var(--cg-muted-dim)", fontSize: 11 }}>No courses match search.</div>
                       )}
                     </div>
                   </div>
@@ -428,7 +439,7 @@ export default function RevisionTracker() {
                   key={fi}
                   value={f.val}
                   onChange={(e) => f.set(e.target.value)}
-                  style={{ fontSize: 10, padding: "5px 8px", background: "#0f172a", border: "1px solid #1e293b", borderRadius: 5, color: "#94a3b8", outline: "none", cursor: "pointer" }}
+                  style={{ fontSize: 10, padding: "5px 8px", background: "var(--cg-surface)", border: "1px solid var(--cg-surface-2)", borderRadius: 5, color: "var(--cg-muted)", outline: "none", cursor: "pointer" }}
                 >
                   {f.opts.map(([v, l]) => (
                     <option key={v} value={v}>
@@ -449,7 +460,7 @@ export default function RevisionTracker() {
                     return next;
                   });
                 }}
-                style={{ fontSize: 10, background: "#1e293b", border: "none", color: "#94a3b8", borderRadius: 4, padding: "5px 10px", cursor: "pointer" }}
+                style={{ fontSize: 10, background: "var(--cg-surface-2)", border: "none", color: "var(--cg-muted)", borderRadius: 4, padding: "5px 10px", cursor: "pointer" }}
               >
                 {filtered.every((c) => expanded[c.id]) ? "Collapse All" : "Expand All"}
               </button>
@@ -471,7 +482,7 @@ export default function RevisionTracker() {
                 ))}
               </div>
               {!filtered.length && (
-                <div style={{ textAlign: "center", padding: 40, color: "#475569", fontSize: 12 }}>No courses match your filters.</div>
+                <div style={{ textAlign: "center", padding: 40, color: "var(--cg-text-dim)", fontSize: 12 }}>No courses match your filters.</div>
               )}
             </div>
           </>

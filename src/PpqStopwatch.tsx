@@ -25,9 +25,9 @@ export interface PpqStopwatchHandle {
 const btnSm: CSSProperties = {
   fontSize: 10,
   padding: "4px 10px",
-  background: "#1e293b",
-  border: "1px solid #334155",
-  color: "#94a3b8",
+  background: "var(--cg-surface-2)",
+  border: "1px solid var(--cg-border)",
+  color: "var(--cg-muted)",
   borderRadius: 4,
   cursor: "pointer",
 };
@@ -35,10 +35,10 @@ const btnSm: CSSProperties = {
 const inpSm: CSSProperties = {
   fontSize: 10,
   padding: "6px 8px",
-  background: "#020617",
-  border: "1px solid #334155",
+  background: "var(--cg-input-bg)",
+  border: "1px solid var(--cg-border)",
   borderRadius: 5,
-  color: "#e2e8f0",
+  color: "var(--cg-text)",
   outline: "none",
   fontFamily: "inherit",
 };
@@ -127,7 +127,7 @@ export const PpqStopwatch = forwardRef<PpqStopwatchHandle, PpqStopwatchProps>(fu
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
       <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8 }}>
-        <span style={{ fontSize: 14, fontVariantNumeric: "tabular-nums", color: "#f472b6", fontWeight: 700, minWidth: 56 }} title={parseManualMinutesToSeconds(manualMinutes) ? "Using manual time below" : undefined}>
+        <span style={{ fontSize: 14, fontVariantNumeric: "tabular-nums", color: "var(--cg-accent)", fontWeight: 700, minWidth: 56 }} title={parseManualMinutesToSeconds(manualMinutes) ? "Using manual time below" : undefined}>
           {formatDuration(displaySec)}
         </span>
         {runStart == null ? (
@@ -144,8 +144,8 @@ export const PpqStopwatch = forwardRef<PpqStopwatchHandle, PpqStopwatchProps>(fu
         </button>
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
-        <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 10, color: "#94a3b8", cursor: disabled ? "default" : "pointer" }}>
-          <span style={{ color: "#64748b" }}>Or time (min)</span>
+        <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 10, color: "var(--cg-muted)", cursor: disabled ? "default" : "pointer" }}>
+          <span style={{ color: "var(--cg-muted-dim)" }}>Or time (min)</span>
           <input
             type="text"
             inputMode="decimal"
@@ -156,10 +156,10 @@ export const PpqStopwatch = forwardRef<PpqStopwatchHandle, PpqStopwatchProps>(fu
             disabled={disabled}
           />
         </label>
-        <span style={{ fontSize: 8, color: "#475569" }}>Overrides timer if set</span>
+        <span style={{ fontSize: 8, color: "var(--cg-text-dim)" }}>Overrides timer if set</span>
       </div>
-      <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 10, color: "#94a3b8", cursor: disabled ? "default" : "pointer" }}>
-        <input type="checkbox" checked={openBook} onChange={(e) => setOpenBook(e.target.checked)} disabled={disabled} style={{ accentColor: "#f472b6" }} />
+      <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 10, color: "var(--cg-muted)", cursor: disabled ? "default" : "pointer" }}>
+        <input type="checkbox" checked={openBook} onChange={(e) => setOpenBook(e.target.checked)} disabled={disabled} style={{ accentColor: "var(--cg-accent)" }} />
         Open book (notes / not exam conditions)
       </label>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "flex-start" }}>
@@ -179,7 +179,7 @@ export const PpqStopwatch = forwardRef<PpqStopwatchHandle, PpqStopwatchProps>(fu
           disabled={disabled}
         />
         {onLogAttempt && (
-          <button type="button" onClick={save} style={{ ...btnSm, background: "#831843", borderColor: "#f472b6", color: "#fce7f3" }} disabled={disabled}>
+          <button type="button" onClick={save} style={{ ...btnSm, background: "var(--cg-btn-primary-bg)", borderColor: "var(--cg-btn-primary-border)", color: "var(--cg-btn-primary-fg)" }} disabled={disabled}>
             Log attempt
           </button>
         )}

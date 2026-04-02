@@ -150,40 +150,40 @@ export default function ExportDataView({
 
   return (
     <div style={{ maxWidth: 720, margin: "0 auto" }}>
-      <p style={{ fontSize: 11, color: "#64748b", margin: "0 0 16px", lineHeight: 1.55 }}>
+      <p style={{ fontSize: 11, color: "var(--cg-muted-dim)", margin: "0 0 16px", lineHeight: 1.55 }}>
         Single JSON backup for this app: topic sliders & notes, which courses are hidden, PPQ attempts & paper notes, and the Today log / heatmap. Use{" "}
-        <strong style={{ color: "#94a3b8" }}>Export</strong> before reinstalling the browser or moving machines; use <strong style={{ color: "#94a3b8" }}>Merge</strong> to pull in
+        <strong style={{ color: "var(--cg-muted)" }}>Export</strong> before reinstalling the browser or moving machines; use <strong style={{ color: "var(--cg-muted)" }}>Merge</strong> to pull in
         an older file or a PPQ-only export without wiping the rest.
       </p>
 
       <div
         style={{
-          background: "#0f172a",
-          border: "1px solid #1e293b",
+          background: "var(--cg-surface)",
+          border: "1px solid var(--cg-surface-2)",
           borderRadius: 8,
           padding: "16px 18px",
           marginBottom: 16,
         }}
       >
-        <div style={{ fontSize: 10, color: "#64748b", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 10 }}>Export everything</div>
+        <div style={{ fontSize: 10, color: "var(--cg-muted-dim)", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 10 }}>Export everything</div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
-          <button type="button" onClick={exportDownload} style={btnPrimary}>
+          <button type="button" onClick={exportDownload} style={btnPrimarySoft}>
             Download full backup (.json)
           </button>
           <button type="button" onClick={copyJson} style={btnSecondary}>
             Copy JSON to clipboard
           </button>
-          {copyMsg && <span style={{ fontSize: 10, color: "#86efac" }}>{copyMsg}</span>}
+          {copyMsg && <span style={{ fontSize: 10, color: "var(--cg-success)" }}>{copyMsg}</span>}
         </div>
         <pre
           style={{
             marginTop: 14,
             padding: 12,
-            background: "#020617",
-            border: "1px solid #334155",
+            background: "var(--cg-bg-deep)",
+            border: "1px solid var(--cg-border)",
             borderRadius: 6,
             fontSize: 9,
-            color: "#94a3b8",
+            color: "var(--cg-muted)",
             maxHeight: 180,
             overflow: "auto",
             whiteSpace: "pre-wrap",
@@ -197,28 +197,28 @@ export default function ExportDataView({
 
       <div
         style={{
-          background: "#0f172a",
-          border: "1px solid #1e293b",
+          background: "var(--cg-surface)",
+          border: "1px solid var(--cg-surface-2)",
           borderRadius: 8,
           padding: "16px 18px",
         }}
       >
-        <div style={{ fontSize: 10, color: "#64748b", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 10 }}>Import</div>
-        <label style={{ fontSize: 11, color: "#94a3b8", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+        <div style={{ fontSize: 10, color: "var(--cg-muted-dim)", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 10 }}>Import</div>
+        <label style={{ fontSize: 11, color: "var(--cg-muted)", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
           <span>Choose JSON file</span>
           <input type="file" accept="application/json,.json" onChange={onPickFile} style={{ fontSize: 11 }} />
         </label>
 
         {preview && (
-          <div style={{ marginBottom: 12, fontSize: 11, color: "#cbd5e1", lineHeight: 1.6 }}>
-            <div style={{ marginBottom: 6, color: "#a78bfa", fontWeight: 600 }}>Loaded file preview</div>
+          <div style={{ marginBottom: 12, fontSize: 11, color: "var(--cg-text)", lineHeight: 1.6 }}>
+            <div style={{ marginBottom: 6, color: "var(--cg-accent)", fontWeight: 600 }}>Loaded file preview</div>
             <div>Topic keys: {preview.topics}</div>
             <div>Hidden course ids: {preview.hiddenIds}</div>
             <div>PPQ question keys: {preview.ppqQuestions}</div>
             {preview.ppqDoneKeys > 0 && <div>Legacy ppqDone keys: {preview.ppqDoneKeys} (merge only)</div>}
             <div>Today / daily log days: {preview.dailyDays}</div>
-            {preview.exportedAt && <div style={{ color: "#64748b", fontSize: 10 }}>exportedAt: {preview.exportedAt}</div>}
-            {preview.schemaVersion != null && <div style={{ color: "#64748b", fontSize: 10 }}>schemaVersion: {String(preview.schemaVersion)}</div>}
+            {preview.exportedAt && <div style={{ color: "var(--cg-muted-dim)", fontSize: 10 }}>exportedAt: {preview.exportedAt}</div>}
+            {preview.schemaVersion != null && <div style={{ color: "var(--cg-muted-dim)", fontSize: 10 }}>schemaVersion: {String(preview.schemaVersion)}</div>}
           </div>
         )}
 
@@ -247,20 +247,27 @@ export default function ExportDataView({
 const btnPrimary: CSSProperties = {
   fontSize: 11,
   padding: "8px 14px",
-  background: "#3730a3",
-  border: "1px solid #6366f1",
-  color: "#e0e7ff",
+  background: "var(--cg-btn-primary-bg)",
+  border: "1px solid var(--cg-btn-primary-border)",
+  color: "var(--cg-btn-primary-fg)",
   borderRadius: 6,
   cursor: "pointer",
   fontWeight: 600,
 };
 
+const btnPrimarySoft: CSSProperties = {
+  ...btnPrimary,
+  background: "var(--cg-btn-soft-bg)",
+  border: "1px solid var(--cg-btn-soft-border)",
+  color: "var(--cg-btn-soft-fg)",
+};
+
 const btnSecondary: CSSProperties = {
   fontSize: 11,
   padding: "8px 14px",
-  background: "#1e293b",
-  border: "1px solid #334155",
-  color: "#94a3b8",
+  background: "var(--cg-surface-2)",
+  border: "1px solid var(--cg-border)",
+  color: "var(--cg-muted)",
   borderRadius: 6,
   cursor: "pointer",
 };
@@ -268,9 +275,9 @@ const btnSecondary: CSSProperties = {
 const btnDanger: CSSProperties = {
   fontSize: 11,
   padding: "8px 14px",
-  background: "#450a0a",
-  border: "1px solid #b91c1c",
-  color: "#fecaca",
+  background: "var(--cg-btn-danger-bg)",
+  border: "1px solid var(--cg-btn-danger-border)",
+  color: "var(--cg-btn-danger-fg)",
   borderRadius: 6,
   cursor: "pointer",
   fontWeight: 600,

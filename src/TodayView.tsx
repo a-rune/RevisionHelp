@@ -23,7 +23,7 @@ const MS_DAY = 86400000;
 const THEORY_BUMP = 75;
 const PPQ_COURSE_BUMP = 5;
 
-const HEAT_BG = ["#0f172a", "#14532d", "#166534", "#22c55e", "#4ade80"];
+const HEAT_BG = ["#fafafa", "#fecaca", "#fca5a5", "#f87171", "#dc2626"];
 
 /** Fixed square cells; grid width stays natural (not stretched full-bleed). */
 const HEAT_CELL_PX = 12;
@@ -324,16 +324,15 @@ export default function TodayView({
 
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-      <p style={{ fontSize: 11, color: "#64748b", margin: "0 0 16px", lineHeight: 1.55 }}>
-        Add <strong style={{ color: "#94a3b8" }}>structured blocks</strong> for this day: either a <strong style={{ color: "#818cf8" }}>theory revision</strong> (pick topics → bumps
-        theory on the Topics tab) or a <strong style={{ color: "#f472b6" }}>PPQ question attempt</strong> (pick a question → optional PPQ bank entry + course PPQ on Topics). No LLM — just
-        selectors.
+      <p style={{ fontSize: 11, color: "var(--cg-muted-dim)", margin: "0 0 16px", lineHeight: 1.55 }}>
+        Add <strong style={{ color: "var(--cg-muted)" }}>structured blocks</strong> for this day: either a <strong style={{ color: "var(--cg-theory)" }}>theory revision</strong> (pick topics → bumps
+        theory on the Topics tab) or a <strong style={{ color: "var(--cg-ppq)" }}>PPQ question attempt</strong> (pick a question → optional PPQ bank entry + course PPQ on Topics).
       </p>
 
       <div
         style={{
-          background: "#0f172a",
-          border: "1px solid #1e293b",
+          background: "var(--cg-surface)",
+          border: "1px solid var(--cg-surface-2)",
           borderRadius: 8,
           padding: "12px 14px",
           marginBottom: 16,
@@ -350,11 +349,11 @@ export default function TodayView({
             rowGap: 8,
           }}
         >
-          <div style={{ fontSize: 9, color: "#64748b", textTransform: "uppercase", letterSpacing: 0.6 }}>
+          <div style={{ fontSize: 9, color: "var(--cg-muted-dim)", textTransform: "uppercase", letterSpacing: 0.6 }}>
             Heatmap · {formatHeatmapDay(heatmapRangeStart)} – {formatHeatmapDay(heatmapRangeEnd)} · {weeks.length} week{weeks.length === 1 ? "" : "s"}
           </div>
-          <label style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 10, color: "#94a3b8" }}>
-            <span style={{ color: "#64748b" }}>Start</span>
+          <label style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 10, color: "var(--cg-muted)" }}>
+            <span style={{ color: "var(--cg-muted-dim)" }}>Start</span>
             <input
               type="date"
               value={heatmapRange.start}
@@ -373,16 +372,16 @@ export default function TodayView({
               }}
               style={{
                 fontSize: 11,
-                color: "#e2e8f0",
-                background: "#020617",
-                border: "1px solid #334155",
+                color: "var(--cg-text)",
+                background: "var(--cg-bg-deep)",
+                border: "1px solid var(--cg-border)",
                 borderRadius: 4,
                 padding: "4px 6px",
               }}
             />
           </label>
-          <label style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 10, color: "#94a3b8" }}>
-            <span style={{ color: "#64748b" }}>End</span>
+          <label style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 10, color: "var(--cg-muted)" }}>
+            <span style={{ color: "var(--cg-muted-dim)" }}>End</span>
             <input
               type="date"
               value={heatmapRange.end}
@@ -401,9 +400,9 @@ export default function TodayView({
               }}
               style={{
                 fontSize: 11,
-                color: "#e2e8f0",
-                background: "#020617",
-                border: "1px solid #334155",
+                color: "var(--cg-text)",
+                background: "var(--cg-bg-deep)",
+                border: "1px solid var(--cg-border)",
                 borderRadius: 4,
                 padding: "4px 6px",
               }}
@@ -428,7 +427,7 @@ export default function TodayView({
                 <div
                   style={{
                     fontSize: 8,
-                    color: "#475569",
+                    color: "var(--cg-text-dim)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "flex-end",
@@ -465,8 +464,8 @@ export default function TodayView({
                         minHeight: HEAT_CELL_PX,
                         padding: 0,
                         borderRadius: 2,
-                        border: isSel ? "1px solid #93c5fd" : "1px solid #1e293b",
-                        background: dead ? "#020617" : HEAT_BG[inten],
+                        border: isSel ? "1px solid var(--cg-focus)" : "1px solid var(--cg-surface-2)",
+                        background: dead ? "var(--cg-bg-deep)" : HEAT_BG[inten],
                         opacity: dead ? 0.22 : 1,
                         cursor: dead ? "default" : "pointer",
                         boxSizing: "border-box",
@@ -479,18 +478,18 @@ export default function TodayView({
           </div>
         </div>
         <div style={{ display: "flex", gap: 12, marginTop: 10, flexWrap: "wrap", alignItems: "center" }}>
-          <span style={{ fontSize: 8, color: "#475569" }}>Less</span>
+          <span style={{ fontSize: 8, color: "var(--cg-text-dim)" }}>Less</span>
           {HEAT_BG.map((c, i) => (
-            <span key={i} style={{ width: HEAT_CELL_PX, height: HEAT_CELL_PX, borderRadius: 2, background: c, border: "1px solid #1e293b" }} />
+            <span key={i} style={{ width: HEAT_CELL_PX, height: HEAT_CELL_PX, borderRadius: 2, background: c, border: "1px solid var(--cg-surface-2)" }} />
           ))}
-          <span style={{ fontSize: 8, color: "#475569" }}>More</span>
+          <span style={{ fontSize: 8, color: "var(--cg-text-dim)" }}>More</span>
         </div>
       </div>
 
       <div
         style={{
-          background: "#0f172a",
-          border: "1px solid #1e293b",
+          background: "var(--cg-surface)",
+          border: "1px solid var(--cg-surface-2)",
           borderRadius: 8,
           padding: "14px 16px",
         }}
@@ -505,13 +504,13 @@ export default function TodayView({
           <button type="button" onClick={() => shiftSelectedDay(1)} style={navBtn} disabled={selectedDayKey >= todayKey}>
             Next day →
           </button>
-          <span style={{ fontSize: 13, fontWeight: 700, color: "#e2e8f0", marginLeft: 4 }}>{selectedDayKey}</span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: "var(--cg-text)", marginLeft: 4 }}>{selectedDayKey}</span>
           {isFuture && <span style={{ fontSize: 10, color: "#f87171" }}>Future day — logging disabled</span>}
         </div>
 
-        <div style={{ fontSize: 10, color: "#64748b", marginBottom: 8 }}>Blocks for this day</div>
+        <div style={{ fontSize: 10, color: "var(--cg-muted-dim)", marginBottom: 8 }}>Blocks for this day</div>
         <ul style={{ listStyle: "none", margin: "0 0 18px", padding: 0, display: "flex", flexDirection: "column", gap: 8 }}>
-          {entriesForDay.length === 0 && <li style={{ fontSize: 11, color: "#475569" }}>Nothing yet — add a block below.</li>}
+          {entriesForDay.length === 0 && <li style={{ fontSize: 11, color: "var(--cg-text-dim)" }}>Nothing yet — add a block below.</li>}
           {entriesForDay.map((e) => (
             <EntryCard key={e.id} e={e} allCourses={allCourses} onRemove={() => removeEntry(e.id)} />
           ))}
@@ -531,27 +530,27 @@ export default function TodayView({
               onClick={() => setBlockMode(m.id)}
               style={{
                 ...modeBtn,
-                border: blockMode === m.id ? "1px solid #818cf8" : "1px solid #334155",
-                background: blockMode === m.id ? "#1e1b4b" : "#020617",
-                color: blockMode === m.id ? "#e2e8f0" : "#94a3b8",
+                border: blockMode === m.id ? "1px solid var(--cg-theory)" : "1px solid var(--cg-border)",
+                background: blockMode === m.id ? "var(--cg-tab-active-bg)" : "var(--cg-bg-deep)",
+                color: blockMode === m.id ? "var(--cg-text)" : "var(--cg-muted)",
               }}
             >
               <span style={{ fontWeight: 700, display: "block" }}>{m.label}</span>
-              <span style={{ fontSize: 8, color: "#64748b" }}>{m.sub}</span>
+              <span style={{ fontSize: 8, color: "var(--cg-muted-dim)" }}>{m.sub}</span>
             </button>
           ))}
         </div>
 
         {visibleCourses.length === 0 && (
-          <p style={{ fontSize: 11, color: "#94a3b8", marginBottom: 12 }}>
-            No courses in your overview — open <strong style={{ color: "#cbd5e1" }}>Topics &amp; theory</strong> and use the <strong style={{ color: "#cbd5e1" }}>Courses</strong> dropdown to show
+          <p style={{ fontSize: 11, color: "var(--cg-muted)", marginBottom: 12 }}>
+            No courses in your overview — open <strong style={{ color: "var(--cg-text)" }}>Topics &amp; theory</strong> and use the <strong style={{ color: "var(--cg-text)" }}>Courses</strong> dropdown to show
             courses here.
           </p>
         )}
 
         {blockMode === "theory" && (
           <div style={panelStyle}>
-            <div style={{ fontSize: 10, color: "#818cf8", fontWeight: 700, marginBottom: 10 }}>Revised theory — pick a course, tick one or more topics, then add.</div>
+            <div style={{ fontSize: 10, color: "var(--cg-theory)", fontWeight: 700, marginBottom: 10 }}>Revised theory — pick a course, tick one or more topics, then add.</div>
             <label style={labelCol}>
               <span>Course</span>
               <select
@@ -573,15 +572,15 @@ export default function TodayView({
             </label>
             {theoryCourse && theoryTopics.length > 0 && (
               <div style={{ marginTop: 10 }}>
-                <div style={{ fontSize: 9, color: "#64748b", marginBottom: 6 }}>Topics revised (each gets +{THEORY_BUMP}% theory on Topics tab)</div>
+                <div style={{ fontSize: 9, color: "var(--cg-muted-dim)", marginBottom: 6 }}>Topics revised (each gets +{THEORY_BUMP}% theory on Topics tab)</div>
                 <div
                   style={{
                     maxHeight: 220,
                     overflowY: "auto",
-                    border: "1px solid #334155",
+                    border: "1px solid var(--cg-border)",
                     borderRadius: 6,
                     padding: 8,
-                    background: "#020617",
+                    background: "var(--cg-bg-deep)",
                     display: "flex",
                     flexDirection: "column",
                     gap: 6,
@@ -590,16 +589,16 @@ export default function TodayView({
                   {theoryTopics.map((t, i) => (
                     <label
                       key={i}
-                      style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 10, color: "#cbd5e1", cursor: isFuture ? "default" : "pointer" }}
+                      style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 10, color: "var(--cg-text)", cursor: isFuture ? "default" : "pointer" }}
                     >
                       <input
                         type="checkbox"
                         checked={theoryPicked.has(i)}
                         onChange={() => toggleTheoryTopic(i)}
                         disabled={isFuture}
-                        style={{ marginTop: 2 }}
+                        style={{ flexShrink: 0 }}
                       />
-                      <span>{t}</span>
+                      <span style={{ lineHeight: 1.35 }}>{t}</span>
                     </label>
                   ))}
                 </div>
@@ -620,7 +619,7 @@ export default function TodayView({
               type="button"
               onClick={addTheoryBlock}
               disabled={isFuture || !theoryCourseId || theoryPicked.size === 0}
-              style={addBtn}
+              style={addBlockBtn}
             >
               Add theory block · +{THEORY_BUMP}% per selected topic
             </button>
@@ -629,8 +628,8 @@ export default function TodayView({
 
         {blockMode === "question" && (
           <div style={panelStyle}>
-            <div style={{ fontSize: 10, color: "#f472b6", fontWeight: 700, marginBottom: 10 }}>PPQ question attempt — pick course, then question.</div>
-            {triposLoading && <div style={{ fontSize: 11, color: "#64748b" }}>Loading question list…</div>}
+            <div style={{ fontSize: 10, color: "var(--cg-ppq)", fontWeight: 700, marginBottom: 10 }}>PPQ question attempt — pick course, then question.</div>
+            {triposLoading && <div style={{ fontSize: 11, color: "var(--cg-muted-dim)" }}>Loading question list…</div>}
             {triposError && (
               <div style={{ fontSize: 11, color: "#f87171", marginBottom: 8 }}>
                 {triposError}
@@ -640,8 +639,8 @@ export default function TodayView({
               </div>
             )}
             {!triposLoading && !triposError && triposQuestions && coursesWithPpq.length === 0 && (
-              <p style={{ fontSize: 11, color: "#64748b" }}>
-                No courses map to Tripos questions yet — add topic names in <code style={{ color: "#94a3b8" }}>src/triposTopicMap.ts</code>.
+              <p style={{ fontSize: 11, color: "var(--cg-muted-dim)" }}>
+                No courses map to Tripos questions yet — add topic names in <code style={{ color: "var(--cg-muted)" }}>src/triposTopicMap.ts</code>.
               </p>
             )}
             {!triposLoading && !triposError && coursesWithPpq.length > 0 && (
@@ -685,17 +684,17 @@ export default function TodayView({
                 )}
                 {qCourse && qCourse.topics.length > 0 && (
                   <div style={{ marginTop: 10 }}>
-                    <div style={{ fontSize: 9, color: "#64748b", marginBottom: 6 }}>
+                    <div style={{ fontSize: 9, color: "var(--cg-muted-dim)", marginBottom: 6 }}>
                       Topics covered with this attempt (optional — each selected topic gets +{THEORY_BUMP}% theory on the Topics tab)
                     </div>
                     <div
                       style={{
                         maxHeight: 180,
                         overflowY: "auto",
-                        border: "1px solid #334155",
+                        border: "1px solid var(--cg-border)",
                         borderRadius: 6,
                         padding: 8,
-                        background: "#020617",
+                        background: "var(--cg-bg-deep)",
                         display: "flex",
                         flexDirection: "column",
                         gap: 6,
@@ -704,40 +703,40 @@ export default function TodayView({
                       {qCourse.topics.map((t, i) => (
                         <label
                           key={i}
-                          style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 10, color: "#cbd5e1", cursor: isFuture ? "default" : "pointer" }}
+                          style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 10, color: "var(--cg-text)", cursor: isFuture ? "default" : "pointer" }}
                         >
                           <input
                             type="checkbox"
                             checked={qTopicPicked.has(i)}
                             onChange={() => toggleQTopic(i)}
                             disabled={isFuture}
-                            style={{ marginTop: 2 }}
+                            style={{ flexShrink: 0 }}
                           />
-                          <span>{t}</span>
+                          <span style={{ lineHeight: 1.35 }}>{t}</span>
                         </label>
                       ))}
                     </div>
                   </div>
                 )}
                 <div style={{ marginTop: 10 }}>
-                  <div style={{ fontSize: 9, color: "#64748b", marginBottom: 4 }}>Timer, marks, notes — same fields as the PPQ bank tab</div>
+                  <div style={{ fontSize: 9, color: "var(--cg-muted-dim)", marginBottom: 4 }}>Timer, marks, notes — same fields as the PPQ bank tab</div>
                   <PpqStopwatch ref={ppqSwRef} disabled={isFuture} />
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 10, marginBottom: 12 }}>
                   <label style={chkLabel}>
                     <input type="checkbox" checked={syncPpqBank} onChange={(e) => setSyncPpqBank(e.target.checked)} disabled={isFuture} />
-                    Record attempt in <strong style={{ color: "#e2e8f0" }}>PPQ bank</strong> tab (same as logging there)
+                    Record attempt in <strong style={{ color: "var(--cg-text)" }}>PPQ bank</strong> tab (same as logging there)
                   </label>
                   <label style={chkLabel}>
                     <input type="checkbox" checked={bumpCoursePpq} onChange={(e) => setBumpCoursePpq(e.target.checked)} disabled={isFuture} />
-                    +{PPQ_COURSE_BUMP}% <strong style={{ color: "#e2e8f0" }}>course PPQ</strong> on Topics tab
+                    +{PPQ_COURSE_BUMP}% <strong style={{ color: "var(--cg-text)" }}>course PPQ</strong> on Topics tab
                   </label>
                 </div>
                 <button
                   type="button"
                   onClick={addQuestionBlock}
                   disabled={isFuture || !qCourseId || !qKey}
-                  style={{ ...addBtn, background: "#831843", borderColor: "#f472b6", color: "#fce7f3" }}
+                  style={addBlockBtn}
                 >
                   Add PPQ attempt block
                 </button>
@@ -748,7 +747,7 @@ export default function TodayView({
 
         {blockMode === "note" && (
           <div style={panelStyle}>
-            <div style={{ fontSize: 10, color: "#94a3b8", marginBottom: 8 }}>Free text only — does not change Topics or PPQ data.</div>
+            <div style={{ fontSize: 10, color: "var(--cg-muted)", marginBottom: 8 }}>Free text only — does not change Topics or PPQ data.</div>
             <textarea
               value={noteDraft}
               onChange={(e) => setNoteDraft(e.target.value)}
@@ -779,30 +778,34 @@ function EntryCard({
   const course = e.courseId ? allCourses.find((c) => c.id === e.courseId) : undefined;
 
   const badge =
-    e.kind === "question" ? { t: "PPQ", c: "#f472b6", bg: "#3b0a1a" } : e.kind === "topic" ? { t: "Theory", c: "#818cf8", bg: "#1e1b4b" } : { t: "Note", c: "#94a3b8", bg: "#1e293b" };
+    e.kind === "question"
+      ? { t: "PPQ", c: "var(--cg-ppq)", bg: "var(--cg-badge-ppq-bg)" }
+      : e.kind === "topic"
+        ? { t: "Theory", c: "var(--cg-theory)", bg: "var(--cg-badge-theory-bg)" }
+        : { t: "Note", c: "var(--cg-muted)", bg: "var(--cg-surface-2)" };
 
   return (
     <li
       style={{
         fontSize: 11,
         padding: "10px 12px",
-        background: "#020617",
+        background: "var(--cg-bg-deep)",
         borderRadius: 8,
-        border: "1px solid #1e293b",
-        color: "#cbd5e1",
+        border: "1px solid var(--cg-surface-2)",
+        color: "var(--cg-text)",
       }}
     >
       <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "flex-start" }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <span style={{ fontSize: 8, fontWeight: 800, color: badge.c, background: badge.bg, padding: "2px 6px", borderRadius: 4, marginRight: 8 }}>{badge.t}</span>
           {e.kind === "question" && e.ppqQuestionKey && (
-            <div style={{ marginTop: 6, fontSize: 10, color: "#f472b6", fontWeight: 600 }}>{formatQuestionKeyForDisplay(e.ppqQuestionKey)}</div>
+            <div style={{ marginTop: 6, fontSize: 10, color: "var(--cg-ppq)", fontWeight: 600 }}>{formatQuestionKeyForDisplay(e.ppqQuestionKey)}</div>
           )}
           {e.kind === "question" && e.courseId && (
-            <div style={{ marginTop: 6, fontSize: 10, color: "#e2e8f0" }}>
+            <div style={{ marginTop: 6, fontSize: 10, color: "var(--cg-text)" }}>
               {course?.name ?? e.courseId}
               {course && e.topicIndices?.length ? (
-                <span style={{ color: "#94a3b8" }}>
+                <span style={{ color: "var(--cg-text)" }}>
                   {" "}
                   · topics:{" "}
                   {e.topicIndices.map((i) => (course.topics[i] ? course.topics[i].slice(0, 48) : `#${i}`)).join("; ")}
@@ -821,16 +824,16 @@ function EntryCard({
             </div>
           ) : null}
           {e.kind === "topic" && course && (
-            <div style={{ marginTop: 6, fontSize: 10, color: "#818cf8" }}>
+            <div style={{ marginTop: 6, fontSize: 10, color: "var(--cg-theory)" }}>
               {course.name}
               {e.topicIndices?.length ? (
-                <span style={{ color: "#94a3b8" }}>
+                <span style={{ color: "var(--cg-muted)" }}>
                   {" "}
                   · topics:{" "}
                   {e.topicIndices.map((i) => (course.topics[i] ? course.topics[i].slice(0, 48) : `#${i}`)).join("; ")}
                 </span>
               ) : e.topicIdx != null ? (
-                <span style={{ color: "#94a3b8" }}> · topic {e.topicIdx + 1}</span>
+                <span style={{ color: "var(--cg-muted)" }}> · topic {e.topicIdx + 1}</span>
               ) : null}
               {e.theoryDelta ? <span style={{ color: "#a5b4fc" }}> · +{e.theoryDelta}% theory each</span> : null}
             </div>
@@ -870,19 +873,19 @@ const modeBtn: CSSProperties = {
 };
 
 const panelStyle: CSSProperties = {
-  border: "1px solid #334155",
+  border: "1px solid var(--cg-border)",
   borderRadius: 8,
   padding: 14,
-  background: "#020617",
+  background: "var(--cg-bg-deep)",
   marginBottom: 8,
 };
 
 const navBtn: CSSProperties = {
   fontSize: 10,
   padding: "5px 10px",
-  background: "#1e293b",
-  border: "1px solid #334155",
-  color: "#94a3b8",
+  background: "var(--cg-surface-2)",
+  border: "1px solid var(--cg-border)",
+  color: "var(--cg-muted)",
   borderRadius: 5,
   cursor: "pointer",
 };
@@ -891,7 +894,7 @@ const removeBtn: CSSProperties = {
   fontSize: 9,
   background: "none",
   border: "none",
-  color: "#64748b",
+  color: "var(--cg-muted-dim)",
   cursor: "pointer",
   flexShrink: 0,
 };
@@ -899,13 +902,21 @@ const removeBtn: CSSProperties = {
 const addBtn: CSSProperties = {
   fontSize: 11,
   padding: "8px 16px",
-  background: "#3730a3",
-  border: "1px solid #6366f1",
-  color: "#e0e7ff",
+  background: "var(--cg-btn-primary-bg)",
+  border: "1px solid var(--cg-btn-primary-border)",
+  color: "var(--cg-btn-primary-fg)",
   borderRadius: 6,
   cursor: "pointer",
   fontWeight: 600,
   marginTop: 12,
+};
+
+/** Today tab — theory / PPQ / note block submit buttons (muted stone, not primary red). */
+const addBlockBtn: CSSProperties = {
+  ...addBtn,
+  background: "var(--cg-btn-soft-bg)",
+  border: "1px solid var(--cg-btn-soft-border)",
+  color: "var(--cg-btn-soft-fg)",
 };
 
 const labelCol: CSSProperties = {
@@ -913,16 +924,16 @@ const labelCol: CSSProperties = {
   flexDirection: "column",
   gap: 4,
   fontSize: 9,
-  color: "#64748b",
+  color: "var(--cg-muted-dim)",
 };
 
 const selectStyle: CSSProperties = {
   fontSize: 11,
   padding: "6px 8px",
-  background: "#020617",
-  border: "1px solid #334155",
+  background: "var(--cg-bg-deep)",
+  border: "1px solid var(--cg-border)",
   borderRadius: 5,
-  color: "#e2e8f0",
+  color: "var(--cg-text)",
   outline: "none",
 };
 
@@ -932,10 +943,10 @@ const textareaStyle: CSSProperties = {
   fontSize: 11,
   lineHeight: 1.45,
   padding: "8px 10px",
-  background: "#0f172a",
-  border: "1px solid #334155",
+  background: "var(--cg-surface)",
+  border: "1px solid var(--cg-border)",
   borderRadius: 6,
-  color: "#e2e8f0",
+  color: "var(--cg-text)",
   outline: "none",
   fontFamily: "inherit",
 };
@@ -945,6 +956,6 @@ const chkLabel: CSSProperties = {
   alignItems: "flex-start",
   gap: 8,
   fontSize: 10,
-  color: "#94a3b8",
+  color: "var(--cg-muted)",
   cursor: "pointer",
 };

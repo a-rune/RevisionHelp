@@ -1,14 +1,14 @@
 import { useState } from "react";
 import type { CourseWithTerm, TopicData } from "../types";
 
-type StatusStyle = { bg: string; border: string; text: string; label: string };
+export type StatusStyle = { rowBg: string; border: string; text: string; label: string };
 
-export function getStatusColor(theory: number, ppq: number): StatusStyle {
-  // const avg = (theory + ppq) / 2;
-  if (theory >= 80) return { bg: "#0a2e1a", border: "#16a34a", text: "#4ade80", label: "Strong" };
-  if (theory >= 50) return { bg: "#1a2400", border: "#a3a316", text: "#d4de4a", label: "OK" };
-  if (theory >= 20) return { bg: "#2e1f0a", border: "#d97706", text: "#fbbf24", label: "Needs Work" };
-  return { bg: "#2e0a0a", border: "#dc2626", text: "#f87171", label: "Critical" };
+/** Pastel fills + muted accents (aligned with light crimson shell). */
+export function getStatusColor(theory: number): StatusStyle {
+  if (theory >= 80) return { rowBg: "#ecfdf5", border: "#6ee7b7", text: "#047857", label: "Strong" };
+  if (theory >= 50) return { rowBg: "#fefce8", border: "#facc15", text: "#a16207", label: "OK" };
+  if (theory >= 20) return { rowBg: "#fffbeb", border: "#fb923c", text: "#c2410c", label: "Needs Work" };
+  return { rowBg: "#fff1f2", border: "#fb7185", text: "#9f1239", label: "Critical" };
 }
 
 function notesFromTopicData(td: TopicData | undefined): string {
@@ -17,6 +17,9 @@ function notesFromTopicData(td: TopicData | undefined): string {
   if (Array.isArray(td.links) && td.links.length) return td.links.join("\n");
   return "";
 }
+
+/** Four quarters: (0,25], (25,50], (50,75], (75,100]; 0% via separate zero button. */
+const PROGRESS_STEPS = [25, 50, 75, 100] as const;
 
 function ProgressBar({
   value,
@@ -29,29 +32,53 @@ function ProgressBar({
   color: string;
   label: string;
 }) {
-  const steps = [0, 25, 50, 75, 100];
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
-      <span style={{ fontSize: 10, color: "#94a3b8", width: 40, flexShrink: 0, textAlign: "right" }}>{label}</span>
-      <div style={{ display: "flex", gap: 2, flex: 1 }}>
-        {steps.map((s) => (
-          <button
-            key={s}
-            type="button"
-            onClick={() => onChange(s)}
-            style={{
-              flex: 1,
-              height: 8,
-              borderRadius: 2,
-              border: "none",
-              cursor: "pointer",
-              background: value >= s ? color : "#1e293b",
-              opacity: value >= s ? 1 : 0.4,
-              transition: "all 0.2s",
-            }}
-            title={`${s}%`}
-          />
-        ))}
+    <div style={{ display: "flex", alignItems: "center", gap: 4, minWidth: 0 }}>
+      <span style={{ fontSize: 10, color: "var(--cg-muted)", width: 40, flexShrink: 0, textAlign: "right" }}>{label}</span>
+      <button
+        type="button"
+        onClick={() => onChange(0)}
+        title="Set to 0%"
+        style={{
+          flexShrink: 0,
+          fontSize: 9,
+          fontWeight: 700,
+          fontFamily: "inherit",
+          padding: "0 6px",
+          minWidth: 22,
+          height: 22,
+          lineHeight: "20px",
+          borderRadius: 4,
+          border: "1px solid var(--cg-border)",
+          background: "var(--cg-surface)",
+          color: "var(--cg-muted-dim)",
+          cursor: "pointer",
+        }}
+      >
+        0
+      </button>
+      <div style={{ display: "flex", gap: 2, flex: 1, minWidth: 0 }}>
+        {PROGRESS_STEPS.map((s) => {
+          const filled = value >= s;
+          return (
+            <button
+              key={s}
+              type="button"
+              onClick={() => onChange(s)}
+              style={{
+                flex: 1,
+                height: 8,
+                borderRadius: 2,
+                border: "none",
+                cursor: "pointer",
+                background: filled ? color : "var(--cg-progress-empty)",
+                opacity: filled ? 1 : 0.4,
+                transition: "all 0.2s",
+              }}
+              title={`${s}%`}
+            />
+          );
+        })}
       </div>
       <span style={{ fontSize: 10, color, width: 28, flexShrink: 0, textAlign: "right", fontWeight: 600 }}>{value}%</span>
     </div>
@@ -75,7 +102,7 @@ function TopicRow({
 }) {
   const [notesOpen, setNotesOpen] = useState(false);
   const td = data || { theory: 0 };
-  const status = getStatusColor(td.theory, coursePpq);
+  const status = getStatusColor(td.theory);
   const notesText = notesFromTopicData(td);
   const firstLine = notesText.trim().split(/\r?\n/).find((l) => l.trim()) || "";
   const preview = firstLine.length > 52 ? `${firstLine.slice(0, 52)}…` : firstLine;
@@ -90,7 +117,7 @@ function TopicRow({
     <div
       style={{
         borderLeft: `3px solid ${status.border}`,
-        background: status.bg + "40",
+        background: status.rowBg,
         borderRadius: "0 4px 4px 0",
         transition: "all 0.3s",
         overflow: "hidden",
@@ -99,16 +126,16 @@ function TopicRow({
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "minmax(0, 1.6fr) 160px 50px minmax(0, 1fr)",
+          gridTemplateColumns: "minmax(0, 1.6fr) minmax(168px, 1fr) 50px minmax(0, 1fr)",
           gap: 8,
           padding: "6px 10px",
           alignItems: "center",
         }}
       >
-        <span style={{ fontSize: 12, color: "#e2e8f0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={topic}>
+        <span style={{ fontSize: 12, color: "var(--cg-text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={topic}>
           {topic}
         </span>
-        <ProgressBar value={td.theory} onChange={(v) => updateTopic(courseId, topicIdx, { ...td, theory: v })} color="#818cf8" label="Theory" />
+        <ProgressBar value={td.theory} onChange={(v) => updateTopic(courseId, topicIdx, { ...td, theory: v })} color="var(--cg-theory)" label="Theory" />
         <span style={{ fontSize: 9, color: status.text, fontWeight: 700, textAlign: "center", textTransform: "uppercase", letterSpacing: 0.5 }}>{status.label}</span>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "stretch", gap: 4, minWidth: 0 }}>
           <button
@@ -117,9 +144,9 @@ function TopicRow({
             style={{
               fontSize: 10,
               textAlign: "left",
-              background: notesOpen ? "#1e293b" : "none",
-              border: "1px solid #334155",
-              color: "#94a3b8",
+              background: notesOpen ? "var(--cg-surface-2)" : "none",
+              border: "1px solid var(--cg-border)",
+              color: "var(--cg-muted)",
               borderRadius: 4,
               cursor: "pointer",
               padding: "4px 8px",
@@ -128,7 +155,7 @@ function TopicRow({
               gap: 6,
             }}
           >
-            <span style={{ color: "#64748b", flexShrink: 0 }}>{notesOpen ? "▼" : "▶"}</span>
+            <span style={{ color: "var(--cg-muted-dim)", flexShrink: 0 }}>{notesOpen ? "▼" : "▶"}</span>
             <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{notesOpen ? "Hide notes" : preview || "Notes & links"}</span>
           </button>
         </div>
@@ -147,10 +174,10 @@ function TopicRow({
               fontSize: 11,
               lineHeight: 1.45,
               padding: "8px 10px",
-              background: "#020617",
-              border: "1px solid #334155",
+              background: "var(--cg-bg-deep)",
+              border: "1px solid var(--cg-border)",
               borderRadius: 6,
-              color: "#e2e8f0",
+              color: "var(--cg-text)",
               outline: "none",
               fontFamily: "inherit",
             }}
@@ -184,7 +211,7 @@ export function CourseCard({
     return (td.theory + coursePpqVal) / 2;
   });
   const avg = topics.length ? progress.reduce((a, b) => a + b, 0) / topics.length : 0;
-  const status = getStatusColor(avg, avg);
+  const status = getStatusColor(avg);
   const theoryAvg = topics.length
     ? topics.reduce((a, _, i) => a + (topicData?.[`${course.id}_${i}`]?.theory || 0), 0) / topics.length
     : 0;
@@ -193,8 +220,8 @@ export function CourseCard({
   return (
     <div
       style={{
-        background: "#0f172a",
-        border: `1px solid ${isExpanded ? status.border : "#1e293b"}`,
+        background: "var(--cg-surface)",
+        border: `1px solid ${isExpanded ? status.border : "var(--cg-surface-2)"}`,
         borderRadius: 8,
         overflow: "hidden",
         transition: "all 0.3s",
@@ -218,34 +245,34 @@ export function CourseCard({
       >
         <div style={{ minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <span style={{ fontSize: 14, fontWeight: 700, color: "#f1f5f9", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{course.name}</span>
-            {course.isModule && <span style={{ fontSize: 9, background: "#1e3a5f", color: "#60a5fa", padding: "1px 5px", borderRadius: 3, fontWeight: 600, flexShrink: 0 }}>MODULE</span>}
-            {course.code ? <span style={{ fontSize: 9, color: "#64748b", flexShrink: 0 }}>{course.code}</span> : null}
+            <span style={{ fontSize: 14, fontWeight: 700, color: "var(--cg-text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{course.name}</span>
+            {course.isModule && <span style={{ fontSize: 9, background: "var(--cg-module-bg)", color: "var(--cg-module-fg)", padding: "1px 5px", borderRadius: 3, fontWeight: 600, flexShrink: 0 }}>MODULE</span>}
+            {course.code ? <span style={{ fontSize: 9, color: "var(--cg-muted-dim)", flexShrink: 0 }}>{course.code}</span> : null}
           </div>
-          <div style={{ fontSize: 10, color: "#64748b", marginTop: 2 }}>
+          <div style={{ fontSize: 10, color: "var(--cg-muted-dim)", marginTop: 2 }}>
             {course.lecturer} · {course.hours}h · {topics.length} topics
           </div>
         </div>
         <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 10, color: "#818cf8", fontWeight: 600 }}>{Math.round(theoryAvg)}%</div>
-          <div style={{ fontSize: 8, color: "#64748b" }}>Theory</div>
+          <div style={{ fontSize: 10, color: "var(--cg-theory)", fontWeight: 600 }}>{Math.round(theoryAvg)}%</div>
+          <div style={{ fontSize: 8, color: "var(--cg-muted-dim)" }}>Theory</div>
         </div>
         <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 10, color: "#f472b6", fontWeight: 600 }}>{Math.round(ppqAvg)}%</div>
-          <div style={{ fontSize: 8, color: "#64748b" }}>PPQ (course)</div>
+          <div style={{ fontSize: 10, color: "var(--cg-ppq)", fontWeight: 600 }}>{Math.round(ppqAvg)}%</div>
+          <div style={{ fontSize: 8, color: "var(--cg-muted-dim)" }}>PPQ (course)</div>
         </div>
         <div
           style={{
             width: 48,
             height: 6,
             borderRadius: 3,
-            background: "#1e293b",
+            background: "var(--cg-surface-2)",
             overflow: "hidden",
           }}
         >
           <div style={{ height: "100%", width: `${avg}%`, background: `linear-gradient(90deg, ${status.border}, ${status.text})`, borderRadius: 3, transition: "width 0.5s" }} />
         </div>
-        <span style={{ fontSize: 16, color: "#475569", transition: "transform 0.2s", transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)" }}>▾</span>
+        <span style={{ fontSize: 16, color: "var(--cg-text-dim)", transition: "transform 0.2s", transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)" }}>▾</span>
       </button>
       {isExpanded && (
         <div style={{ padding: "0 8px 10px", display: "flex", flexDirection: "column", gap: 3 }}>
@@ -253,22 +280,22 @@ export function CourseCard({
             style={{
               padding: "8px 10px",
               marginBottom: 4,
-              background: "#020617",
+              background: "var(--cg-ppq-panel-bg)",
               borderRadius: 6,
-              border: "1px solid #1e293b",
+              border: "1px solid var(--cg-ppq-panel-border)",
             }}
           >
-            <div style={{ fontSize: 9, color: "#64748b", marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.5 }}>PPQ confidence</div>
-            <ProgressBar value={coursePpqVal} onChange={(v) => onCoursePpqChange(course.id, v)} color="#f472b6" label="PPQ" />
+            <div style={{ fontSize: 9, color: "var(--cg-muted-dim)", marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.5 }}>PPQ confidence</div>
+            <ProgressBar value={coursePpqVal} onChange={(v) => onCoursePpqChange(course.id, v)} color="var(--cg-ppq-soft)" label="PPQ" />
           </div>
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "minmax(0, 1.6fr) 160px 50px minmax(0, 1fr)",
+              gridTemplateColumns: "minmax(0, 1.6fr) minmax(168px, 1fr) 50px minmax(0, 1fr)",
               gap: 8,
               padding: "4px 10px",
               fontSize: 9,
-              color: "#475569",
+              color: "var(--cg-text-dim)",
               fontWeight: 600,
               textTransform: "uppercase",
               letterSpacing: 0.8,

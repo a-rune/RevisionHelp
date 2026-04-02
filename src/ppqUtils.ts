@@ -69,7 +69,7 @@ export function parseMarksRatio(marksStr: string | null | undefined): number | n
   return null;
 }
 
-/** Not attempted: dark blue. Attempted: red→green by marks; amber if no parseable mark. */
+/** Not attempted: neutral. Attempted: red→green by marks; amber if no parseable mark. */
 export function ppqCellVisualStyle(attempts: PpqAttempt[] | undefined): {
   background: string;
   border: string;
@@ -77,9 +77,9 @@ export function ppqCellVisualStyle(attempts: PpqAttempt[] | undefined): {
 } {
   if (!attempts?.length) {
     return {
-      background: "#0c1929",
-      border: "1px solid #1d4ed8",
-      color: "#93c5fd",
+      background: "#f4f4f5",
+      border: "1px solid #d4d4d8",
+      color: "#71717a",
     };
   }
 
@@ -87,16 +87,16 @@ export function ppqCellVisualStyle(attempts: PpqAttempt[] | undefined): {
   const ratio = parseMarksRatio(latest?.marks);
   if (ratio == null) {
     return {
-      background: "#292524",
-      border: "1px solid #b45309",
-      color: "#fde68a",
+      background: "#fffbeb",
+      border: "1px solid #fbbf24",
+      color: "#92400e",
     };
   }
 
   const hue = ratio * 120;
   return {
-    background: `hsl(${hue}, 42%, 18%)`,
-    border: `1px solid hsl(${hue}, 55%, 36%)`,
-    color: "#f8fafc",
+    background: `hsl(${hue}, 45%, 92%)`,
+    border: `1px solid hsl(${hue}, 50%, 65%)`,
+    color: `hsl(${hue}, 55%, 22%)`,
   };
 }

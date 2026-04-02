@@ -39,9 +39,9 @@ function getLatestAttempt(attempts: PpqAttempt[] | undefined): PpqAttempt | null
 const btnSm = {
   fontSize: 10,
   padding: "4px 10px",
-  background: "#1e293b",
-  border: "1px solid #334155",
-  color: "#94a3b8",
+  background: "var(--cg-surface-2)",
+  border: "1px solid var(--cg-border)",
+  color: "var(--cg-muted)",
   borderRadius: 4,
   cursor: "pointer",
 };
@@ -54,19 +54,19 @@ function QuestionDetailPanel({ q, qKey, qState, onAddAttempt, onDeleteAttempt })
 
   return (
     <div>
-      <div style={{ fontSize: 14, fontWeight: 700, color: "#f1f5f9", marginBottom: 8 }}>{label}</div>
+      <div style={{ fontSize: 14, fontWeight: 700, color: "var(--cg-text)", marginBottom: 8 }}>{label}</div>
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", fontSize: 11, marginBottom: 12 }}>
         {pdfUrl && (
-          <a href={pdfUrl} target="_blank" rel="noreferrer" style={{ color: "#60a5fa" }}>
+          <a href={pdfUrl} target="_blank" rel="noreferrer" style={{ color: "var(--cg-link)" }}>
             Paper PDF
           </a>
         )}
         {solUrl && (
-          <a href={solUrl} target="_blank" rel="noreferrer" style={{ color: "#a78bfa" }}>
+          <a href={solUrl} target="_blank" rel="noreferrer" style={{ color: "var(--cg-link-alt)" }}>
             Solutions
           </a>
         )}
-        <span style={{ fontSize: 10, color: "#64748b" }}>{q.topic}</span>
+        <span style={{ fontSize: 10, color: "var(--cg-muted-dim)" }}>{q.topic}</span>
       </div>
       <PpqStopwatch
         onLogAttempt={(att) =>
@@ -82,7 +82,7 @@ function QuestionDetailPanel({ q, qKey, qState, onAddAttempt, onDeleteAttempt })
       />
       {attempts.length > 0 && (
         <div style={{ marginTop: 12 }}>
-          <div style={{ fontSize: 9, color: "#64748b", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>Past attempts</div>
+          <div style={{ fontSize: 9, color: "var(--cg-muted-dim)", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>Past attempts</div>
           <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 8 }}>
             {[...attempts].reverse().map((a) => (
               <li
@@ -90,29 +90,29 @@ function QuestionDetailPanel({ q, qKey, qState, onAddAttempt, onDeleteAttempt })
                 style={{
                   fontSize: 10,
                   padding: "8px 10px",
-                  background: "#0f172a",
+                  background: "var(--cg-surface)",
                   borderRadius: 6,
-                  border: "1px solid #1e293b",
-                  color: "#cbd5e1",
+                  border: "1px solid var(--cg-surface-2)",
+                  color: "var(--cg-text)",
                 }}
               >
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap", alignItems: "flex-start" }}>
-                  <span style={{ color: "#94a3b8" }}>
+                  <span style={{ color: "var(--cg-muted)" }}>
                     {new Date(a.at).toLocaleString(undefined, { dateStyle: "short", timeStyle: "short" })}
                   </span>
-                  <span style={{ color: "#f472b6" }}>{a.durationSec != null ? formatDuration(a.durationSec) : "—"}</span>
+                  <span style={{ color: "var(--cg-ppq)" }}>{a.durationSec != null ? formatDuration(a.durationSec) : "—"}</span>
                   {a.openBook ? (
-                    <span style={{ fontSize: 9, color: "#a78bfa", fontWeight: 600 }}>Open book</span>
+                    <span style={{ fontSize: 9, color: "var(--cg-link-alt)", fontWeight: 600 }}>Open book</span>
                   ) : null}
                   <button
                     type="button"
                     onClick={() => onDeleteAttempt(qKey, a.id)}
-                    style={{ fontSize: 9, background: "none", border: "none", color: "#64748b", cursor: "pointer", marginLeft: "auto" }}
+                    style={{ fontSize: 9, background: "none", border: "none", color: "var(--cg-muted-dim)", cursor: "pointer", marginLeft: "auto" }}
                   >
                     Remove
                   </button>
                 </div>
-                {a.marks ? <div style={{ marginTop: 4, color: "#a78bfa" }}>Marks: {a.marks}</div> : null}
+                {a.marks ? <div style={{ marginTop: 4, color: "var(--cg-link-alt)" }}>Marks: {a.marks}</div> : null}
                 {a.notes ? <div style={{ marginTop: 4, whiteSpace: "pre-wrap" }}>{a.notes}</div> : null}
               </li>
             ))}
@@ -235,19 +235,19 @@ export default function PpqBankView({
 
   if (triposLoading) {
     return (
-      <div style={{ textAlign: "center", padding: 48, color: "#64748b", fontSize: 13 }}>
-        Loading question list (one request to GitHub for <code style={{ color: "#94a3b8" }}>questions.json</code>)…
+      <div style={{ textAlign: "center", padding: 48, color: "var(--cg-muted-dim)", fontSize: 13 }}>
+        Loading question list (one request to GitHub for <code style={{ color: "var(--cg-muted)" }}>questions.json</code>)…
       </div>
     );
   }
 
   if (triposError) {
     return (
-      <div style={{ padding: 24, color: "#f87171", fontSize: 13 }}>
+      <div style={{ padding: 24, color: "var(--cg-accent)", fontSize: 13 }}>
         Could not load questions.json: {triposError}
-        <div style={{ marginTop: 12, fontSize: 11, color: "#64748b" }}>Check your network; data is fetched from GitHub (olifog/tripospro).</div>
+        <div style={{ marginTop: 12, fontSize: 11, color: "var(--cg-muted-dim)" }}>Check your network; data is fetched from GitHub (olifog/tripospro).</div>
         {onRetryLoad && (
-          <button type="button" onClick={onRetryLoad} style={{ marginTop: 12, fontSize: 11, padding: "6px 12px", background: "#1e293b", border: "1px solid #334155", color: "#94a3b8", borderRadius: 5, cursor: "pointer" }}>
+          <button type="button" onClick={onRetryLoad} style={{ marginTop: 12, fontSize: 11, padding: "6px 12px", background: "var(--cg-surface-2)", border: "1px solid var(--cg-border)", color: "var(--cg-muted)", borderRadius: 5, cursor: "pointer" }}>
             Retry
           </button>
         )}
@@ -258,12 +258,12 @@ export default function PpqBankView({
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto" }}>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center", marginBottom: 16 }}>
-        <label style={{ fontSize: 11, color: "#94a3b8", display: "flex", alignItems: "center", gap: 8 }}>
+        <label style={{ fontSize: 11, color: "var(--cg-muted)", display: "flex", alignItems: "center", gap: 8 }}>
           Year
           <select
             value={yearFilter}
             onChange={(e) => setYearFilter(e.target.value)}
-            style={{ fontSize: 11, padding: "4px 8px", background: "#0f172a", border: "1px solid #1e293b", borderRadius: 5, color: "#e2e8f0" }}
+            style={{ fontSize: 11, padding: "4px 8px", background: "var(--cg-surface)", border: "1px solid var(--cg-surface-2)", borderRadius: 5, color: "var(--cg-text)" }}
           >
             <option value="all">All years</option>
             {years.map((y) => (
@@ -273,18 +273,18 @@ export default function PpqBankView({
             ))}
           </select>
         </label>
-        <button type="button" onClick={exportPpq} style={{ fontSize: 10, padding: "6px 12px", background: "#1e293b", border: "1px solid #334155", color: "#94a3b8", borderRadius: 5, cursor: "pointer" }}>
+        <button type="button" onClick={exportPpq} style={{ fontSize: 10, padding: "6px 12px", background: "var(--cg-surface-2)", border: "1px solid var(--cg-border)", color: "var(--cg-muted)", borderRadius: 5, cursor: "pointer" }}>
           Export PPQ data (JSON)
         </button>
-        <label style={{ fontSize: 10, color: "#64748b", cursor: "pointer" }}>
+        <label style={{ fontSize: 10, color: "var(--cg-muted-dim)", cursor: "pointer" }}>
           <span style={{ marginRight: 8 }}>Import merge</span>
           <input type="file" accept="application/json" onChange={importPpq} style={{ fontSize: 10 }} />
         </label>
-        <span style={{ fontSize: 9, color: "#475569" }} title="Topics, Today log, and course visibility live in the Export & backup tab">
+        <span style={{ fontSize: 9, color: "var(--cg-text-dim)" }} title="Topics, Today log, and course visibility live in the Export & backup tab">
           · Full JSON (everything) → Export & backup tab
         </span>
-        <span style={{ fontSize: 9, color: "#475569" }}>One GitHub fetch ·</span>
-        <span style={{ fontSize: 9, color: "#64748b", marginLeft: 4 }}>Key</span>
+        <span style={{ fontSize: 9, color: "var(--cg-text-dim)" }}>One GitHub fetch ·</span>
+        <span style={{ fontSize: 9, color: "var(--cg-muted-dim)", marginLeft: 4 }}>Key</span>
         {(
           [
             { t: "Not done", attempts: [] as PpqAttempt[] },
@@ -313,7 +313,7 @@ export default function PpqBankView({
                 ...ppqCellVisualStyle(attempts),
               }}
             />
-            <span style={{ fontSize: 8, color: "#64748b" }}>{t}</span>
+            <span style={{ fontSize: 8, color: "var(--cg-muted-dim)" }}>{t}</span>
           </span>
         ))}
       </div>
@@ -328,7 +328,7 @@ export default function PpqBankView({
         return (
           <details
             key={course.id}
-            style={{ marginBottom: 10, border: "1px solid #1e293b", borderRadius: 8, background: "#0f172a", overflow: "hidden" }}
+            style={{ marginBottom: 10, border: "1px solid var(--cg-surface-2)", borderRadius: 8, background: "var(--cg-surface)", overflow: "hidden" }}
           >
             <summary
               style={{
@@ -336,7 +336,7 @@ export default function PpqBankView({
                 cursor: "pointer",
                 fontSize: 13,
                 fontWeight: 700,
-                color: "#e2e8f0",
+                color: "var(--cg-text)",
                 listStyle: "none",
                 display: "flex",
                 alignItems: "center",
@@ -345,16 +345,16 @@ export default function PpqBankView({
               }}
             >
               <span style={{ userSelect: "none" }}>{course.name}</span>
-              {course.isModule && <span style={{ fontSize: 9, background: "#1e3a5f", color: "#60a5fa", padding: "2px 6px", borderRadius: 3 }}>MODULE</span>}
-              <span style={{ fontSize: 11, color: "#f472b6", fontWeight: 600 }}>
+              {course.isModule && <span style={{ fontSize: 9, background: "var(--cg-module-bg)", color: "var(--cg-link)", padding: "2px 6px", borderRadius: 3 }}>MODULE</span>}
+              <span style={{ fontSize: 11, color: "var(--cg-ppq)", fontWeight: 600 }}>
                 {total ? `${attempted}/${total} with attempts` : "no Tripos topic map"}
               </span>
             </summary>
             <div style={{ padding: "0 14px 14px" }}>
               {!total && (
-                <p style={{ fontSize: 11, color: "#64748b", margin: "0 0 8px" }}>
-                  Add topic name(s) in <code style={{ color: "#94a3b8" }}>src/triposTopicMap.ts</code> to match{" "}
-                  <a href="https://github.com/olifog/tripospro/blob/main/questions.json" style={{ color: "#60a5fa" }} rel="noreferrer">
+                <p style={{ fontSize: 11, color: "var(--cg-muted-dim)", margin: "0 0 8px" }}>
+                  Add topic name(s) in <code style={{ color: "var(--cg-muted)" }}>src/triposTopicMap.ts</code> to match{" "}
+                  <a href="https://github.com/olifog/tripospro/blob/main/questions.json" style={{ color: "var(--cg-link)" }} rel="noreferrer">
                     questions.json
                   </a>
                   .
@@ -378,11 +378,11 @@ export default function PpqBankView({
                         gap: 8,
                         marginBottom: lastPaper ? 0 : 8,
                         paddingBottom: lastPaper ? 0 : 8,
-                        borderBottom: lastPaper ? "none" : "1px solid #1e293b",
+                        borderBottom: lastPaper ? "none" : "1px solid var(--cg-surface-2)",
                       }}
                     >
                       <div style={{ flex: "0 0 auto", width: 112, minWidth: 88 }}>
-                        <div style={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", letterSpacing: 0.3, marginBottom: 4 }}>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: "var(--cg-muted)", letterSpacing: 0.3, marginBottom: 4 }}>
                           ’{yy} · P{paper}
                         </div>
                         <textarea
@@ -395,10 +395,10 @@ export default function PpqBankView({
                             fontSize: 9,
                             lineHeight: 1.35,
                             padding: "5px 6px",
-                            background: "#020617",
-                            border: "1px solid #1e293b",
+                            background: "var(--cg-bg-deep)",
+                            border: "1px solid var(--cg-surface-2)",
                             borderRadius: 4,
-                            color: "#94a3b8",
+                            color: "var(--cg-muted)",
                             resize: "none",
                             fontFamily: "inherit",
                             minHeight: 28,
@@ -501,15 +501,15 @@ export default function PpqBankView({
               maxWidth: 520,
               maxHeight: "min(90vh, 720px)",
               overflow: "auto",
-              background: "#0f172a",
-              border: "1px solid #334155",
+              background: "var(--cg-surface)",
+              border: "1px solid var(--cg-border)",
               borderRadius: 12,
               padding: 20,
               boxShadow: "0 25px 80px rgba(0,0,0,0.55)",
             }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 12 }}>
-              <span style={{ fontSize: 10, color: "#64748b", textTransform: "uppercase", letterSpacing: 1 }}>PPQ question</span>
+              <span style={{ fontSize: 10, color: "var(--cg-muted-dim)", textTransform: "uppercase", letterSpacing: 1 }}>PPQ question</span>
               <button type="button" onClick={() => setSelected(null)} style={{ ...btnSm, flexShrink: 0 }}>
                 Close
               </button>

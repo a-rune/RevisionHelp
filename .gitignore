@@ -7,3 +7,4 @@ dist
 .local/
 *.user.json
 cursor_agent_sesh.md
+.cursor/
